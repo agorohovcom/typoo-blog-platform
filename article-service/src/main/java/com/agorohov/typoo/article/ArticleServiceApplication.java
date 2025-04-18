@@ -1,4 +1,4 @@
-package com.agorohov.article;
+package com.agorohov.typoo.article;
 
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
