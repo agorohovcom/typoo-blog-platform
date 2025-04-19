@@ -8,6 +8,7 @@
         <groupId>com.agorohov</groupId>
         <artifactId>typoo-blog-platform</artifactId>
         <version>0.0.1-SNAPSHOT</version>
+        <relativePath>../../pom.xml</relativePath>
     </parent>
 
     <groupId>com.agorohov.typoo</groupId>

@@ -1,0 +1,5 @@
+================ Как собирать ================
+1. Из корня репозитория:
+docker build -f services/article-service/Dockerfile -t article-service .
+2. Или из папки модуля:
+docker build -t article-service .
