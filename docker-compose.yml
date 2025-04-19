@@ -1,20 +1,20 @@
 services:
-  article-db:
+  typoo-db:
     image: postgres:17
-    container_name: typoo_article_db_container
+    container_name: typoo_db_container
     ports:
       - "5435:5432"
     environment:
-      POSTGRES_USER: typoo_article_user
-      POSTGRES_PASSWORD: typoo_article_pass
-      POSTGRES_DB: typoo_article_db
+      POSTGRES_USER: typoo_db_user
+      POSTGRES_PASSWORD: typoo_db_pass
+      POSTGRES_DB: typoo_db
     command: [ "postgres", "-c", "max_connections=1000" ]
     volumes:
-      - typoo_article_db_data:/var/lib/postgresql/data
+      - typoo_db_data:/var/lib/postgresql/data
     networks:
       - typoo_network
     healthcheck:
-      test: [ "CMD-SHELL", "pg_isready -U typoo_article_user -d typoo_article_db" ]
+      test: [ "CMD-SHELL", "pg_isready -U typoo_db_user -d typoo_db" ]
       interval: 5s
       timeout: 5s
       retries: 5
@@ -23,23 +23,25 @@ services:
   article-service:
     build:
       context: .
-      dockerfile: services/article-service/Dockerfile
+      dockerfile: docker/Dockerfile
+      args:
+        SERVICE_NAME: article-service
     environment:
       SPRING_PROFILES_ACTIVE: docker
-      SPRING_DATASOURCE_URL: jdbc:postgresql://article-db:5432/typoo_article_db
-      SPRING_DATASOURCE_USERNAME: typoo_article_user
-      SPRING_DATASOURCE_PASSWORD: typoo_article_pass
+    #      SPRING_DATASOURCE_URL: jdbc:postgresql://typoo-db:5432/typoo_db
+    #      SPRING_DATASOURCE_USERNAME: typoo_db_user
+    #      SPRING_DATASOURCE_PASSWORD: typoo_db_pass
     ports:
-      - "8081:8081"
+      - "8081:8080"
     depends_on:
-      article-db:
+      typoo-db:
         condition: service_healthy
     networks:
       - typoo_network
     restart: unless-stopped
 
 volumes:
-  typoo_article_db_data:
+  typoo_db_data:
 
 networks:
   typoo_network:
