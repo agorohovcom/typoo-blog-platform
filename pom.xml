@@ -23,6 +23,7 @@
     </properties>
 
     <modules>
+        <module>shared</module>
         <module>services/article-service</module>
     </modules>
 
