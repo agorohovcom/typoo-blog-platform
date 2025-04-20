@@ -1,3 +1,14 @@
+# Игнорируем все реальные .env-файлы
+.env
+.env.*
+
+# Но оставляем шаблоны
+!.env.example
+!.env.dev.example
+!.env.docker.example
+!.env.test.example
+!.env.prod.example
+
 HELP.md
 target/
 !.mvn/wrapper/maven-wrapper.jar

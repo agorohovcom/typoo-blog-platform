@@ -18,7 +18,7 @@ COPY ../../$SERVICE_DIR/src ./$SERVICE_DIR/src
 COPY ../services ./services
 
 # Загружаем зависимости
-#RUN mvn -f $SERVICE_DIR/pom.xml dependency:go-offline
+RUN #mvn -f $SERVICE_DIR/pom.xml dependency:go-offline
 
 # Сборка с пропуском тестов
 RUN mvn -f $SERVICE_DIR/pom.xml clean package -DskipTests

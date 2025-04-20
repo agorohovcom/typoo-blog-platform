@@ -7,6 +7,7 @@ import org.springframework.boot.autoconfigure.SpringBootApplication;
 public class ArticleServiceApplication {
 
     public static void main(String[] args) {
+        DotenvLoader.loadEnvironmentVariables();
         SpringApplication.run(ArticleServiceApplication.class, args);
     }
 }
