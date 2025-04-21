@@ -22,6 +22,15 @@ services:
       retries: 5
     restart: unless-stopped
 
+  consul:
+    image: consul:1.15.4
+    container_name: typoo-consul-container
+    ports:
+      - "8500:8500"
+    networks:
+      - typoo_network
+    command: "consul agent -dev -client=0.0.0.0"
+
   article-service:
     build:
       context: .
