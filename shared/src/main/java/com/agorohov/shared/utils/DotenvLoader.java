@@ -1,4 +1,4 @@
-package com.agorohov.typoo.article;
+package com.agorohov.shared.utils;
 
 import io.github.cdimascio.dotenv.Dotenv;
 
@@ -46,4 +46,20 @@ public class DotenvLoader {
             }
         });
     }
+
+//    // пример без dotenv-java (не тестил)
+//    private static void loadFromFile(String filename) {
+//        try (BufferedReader reader = new BufferedReader(new FileReader(filename))) {
+//            reader.lines()
+//                    .map(String::trim)
+//                    .filter(line -> !line.startsWith("#") && line.contains("="))
+//                    .forEach(line -> {
+//                        String[] parts = line.split("=", 2);
+//                        if (parts.length == 2) {
+//                            System.setProperty(parts[0].trim(), parts[1].trim());
+//                        }
+//                    });
+//        } catch (IOException ignored) {
+//        }
+//    }
 }
