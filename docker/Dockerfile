@@ -20,6 +20,7 @@ WORKDIR /app
 
 ARG SERVICE_NAME
 COPY --from=builder /app/services/${SERVICE_NAME}/target/*.jar app.jar
+#COPY ../../services/${SERVICE_NAME}/.env.docker /app/services/${SERVICE_NAME}/.env.docker
 
 EXPOSE 8080
 ENTRYPOINT ["java", "-jar", "app.jar"]

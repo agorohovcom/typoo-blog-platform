@@ -16,6 +16,10 @@
     <packaging>jar</packaging>
 
     <dependencies>
+        <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot</artifactId>
+        </dependency>
         <!-- https://github.com/cdimascio/java-dotenv -->
         <dependency>
             <groupId>io.github.cdimascio</groupId>

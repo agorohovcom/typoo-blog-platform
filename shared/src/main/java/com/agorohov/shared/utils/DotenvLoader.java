@@ -1,33 +1,48 @@
 package com.agorohov.shared.utils;
 
 import io.github.cdimascio.dotenv.Dotenv;
+import org.springframework.core.env.ConfigurableEnvironment;
+import org.springframework.core.env.PropertySource;
 
 public class DotenvLoader {
 
     /**
-     * Загружает переменные окружения из файлов `.env` и `.env.{profile}`,
+     * Загружает переменные окружения из файлов `.env.{profile}`,
+     * находящихся в модулях микросервисов,
      * если они не заданы через переменные окружения или -D.
-     * Если профиль не задан — по умолчанию dev.
+     * Если профиль не задан — по умолчанию `dev`.
      */
-    public static void loadEnvironmentVariables() {
-        String profile = System.getProperty("spring.profiles.active");
-        if (profile == null || profile.isBlank()) {
-            profile = System.getenv("SPRING_PROFILES_ACTIVE");
-        }
+    public static void loadEnvironmentVariables(ConfigurableEnvironment environment) {
+        String profile = environment.getProperty("spring.profiles.active",
+                System.getenv("SPRING_PROFILES_ACTIVE") != null
+                        ? System.getenv("SPRING_PROFILES_ACTIVE")
+                        : "dev");
+        System.setProperty("spring.profiles.active", profile);
 
-        if (profile == null || profile.isBlank()) {
-            profile = "dev";
-            System.setProperty("spring.profiles.active", profile);
-        }
+        environment.getPropertySources().addFirst(new PropertySource<>("custom-env") {
+            @Override
+            public Object getProperty(String name) {
+                return System.getProperty(name);
+            }
+        });
 
-//        loadFromFile(".env");
-        loadFromFile(".env." + profile);
+        String serviceName = environment.getProperty("spring.application.name",
+                System.getenv("SPRING_APPLICATION_NAME"));
+        if (serviceName == null || serviceName.isBlank()) {
+            System.err.println("ERROR: spring.application.name is not set! Environment: " +
+                    environment.getProperty("spring.application.name") + ", Env var: " +
+                    System.getenv("SPRING_APPLICATION_NAME"));
+            throw new IllegalStateException("spring.application.name must be set");
+        }
+        System.out.println("!!!!!!!!!!!!!!!!!!! Loading env for service: " + serviceName + ", profile: " + profile);
+        loadFromFile("services/" + serviceName + "/.env." + profile);
     }
 
     /**
      * Загружает переменные из указанного .env-файла, но не перезаписывает уже заданные значения.
      */
     private static void loadFromFile(String fileName) {
+        System.out.println("!!!!!!!!!!!!! Attempting to load file: " + fileName);
         Dotenv dotenv = Dotenv.configure()
                 .filename(fileName)
                 .ignoreIfMissing()
@@ -43,7 +58,9 @@ public class DotenvLoader {
 
             if (!alreadyDefined) {
                 System.setProperty(key, value);
+                System.out.println("!!!!!!!!!!!!!! Set property: " + key + "=" + value);
             }
+            System.out.println("!!!!!!!!!!!!!!!!!!!!!!!!!!! Loaded env file: " + fileName);
         });
     }
 

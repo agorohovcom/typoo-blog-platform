@@ -1,22 +1,22 @@
 services:
-  typoo-db:
+  article-db:
     image: postgres:17
-    container_name: typoo_db_container
+    container_name: typoo_article_db_container
     env_file:
       - .env
     ports:
       - "5435:5432"
     environment:
-      POSTGRES_DB: ${DB_NAME}
-      POSTGRES_USER: ${DB_USERNAME}
-      POSTGRES_PASSWORD: ${DB_PASSWORD}
+      POSTGRES_DB: ${TYPOO_ARTICLE_DB_NAME}
+      POSTGRES_USER: ${TYPOO_ARTICLE_DB_USERNAME}
+      POSTGRES_PASSWORD: ${TYPOO_ARTICLE_DB_PASSWORD}
     command: [ "postgres", "-c", "max_connections=1000" ]
     volumes:
-      - typoo_db_data:/var/lib/postgresql/data
+      - typoo_article_db_data:/var/lib/postgresql/data
     networks:
       - typoo_network
     healthcheck:
-      test: [ "CMD-SHELL", "pg_isready -U ${DB_USERNAME} -d ${DB_NAME}" ]
+      test: [ "CMD-SHELL", "pg_isready -U ${TYPOO_ARTICLE_DB_USERNAME} -d ${TYPOO_ARTICLE_DB_NAME}" ]
       interval: 5s
       timeout: 5s
       retries: 5
@@ -38,22 +38,22 @@ services:
       args:
         SERVICE_NAME: article-service
     environment:
+      SPRING_APPLICATION_NAME: article-service
       SPRING_PROFILES_ACTIVE: docker
-      DB_NAME: ${DB_NAME}
-      DB_URL: ${DB_URL}
-      DB_USERNAME: ${DB_USERNAME}
-      DB_PASSWORD: ${DB_PASSWORD}
+      TYPOO_ARTICLE_DB_URL: ${TYPOO_ARTICLE_DB_URL}
+      TYPOO_ARTICLE_DB_USERNAME: ${TYPOO_ARTICLE_DB_USERNAME}
+      TYPOO_ARTICLE_DB_PASSWORD: ${TYPOO_ARTICLE_DB_PASSWORD}
     ports:
       - "8081:8081"
     depends_on:
-      typoo-db:
+      article-db:
         condition: service_healthy
     networks:
       - typoo_network
     restart: unless-stopped
 
 volumes:
-  typoo_db_data:
+  typoo_article_db_data:
 
 networks:
   typoo_network:

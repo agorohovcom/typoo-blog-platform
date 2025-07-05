@@ -1,6 +1,6 @@
 # Игнорируем все реальные .env-файлы
-.env
-.env.*
+services/article-service/.env
+services/article-service/.env.docker
 
 # Но оставляем шаблоны
 !.env.example
