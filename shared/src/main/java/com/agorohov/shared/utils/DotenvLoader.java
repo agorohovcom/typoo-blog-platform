@@ -2,8 +2,14 @@ package com.agorohov.shared.utils;
 
 import io.github.cdimascio.dotenv.Dotenv;
 import org.springframework.core.env.ConfigurableEnvironment;
-import org.springframework.core.env.PropertySource;
+import org.springframework.core.env.MapPropertySource;
 
+import java.io.BufferedReader;
+import java.io.FileReader;
+import java.util.HashMap;
+import java.util.Map;
+
+// TODO Удалить вывод в консоль и настроить нормальные логи
 public class DotenvLoader {
 
     /**
@@ -19,12 +25,12 @@ public class DotenvLoader {
                         : "dev");
         System.setProperty("spring.profiles.active", profile);
 
-        environment.getPropertySources().addFirst(new PropertySource<>("custom-env") {
-            @Override
-            public Object getProperty(String name) {
-                return System.getProperty(name);
-            }
-        });
+//        environment.getPropertySources().addFirst(new PropertySource<>("custom-env") {
+//            @Override
+//            public Object getProperty(String name) {
+//                return System.getProperty(name);
+//            }
+//        });
 
         String serviceName = environment.getProperty("spring.application.name",
                 System.getenv("SPRING_APPLICATION_NAME"));
@@ -35,13 +41,17 @@ public class DotenvLoader {
             throw new IllegalStateException("spring.application.name must be set");
         }
         System.out.println("!!!!!!!!!!!!!!!!!!! Loading env for service: " + serviceName + ", profile: " + profile);
-        loadFromFile("services/" + serviceName + "/.env." + profile);
+
+        Map<String, Object> envProperties = new HashMap<>();
+        loadFromFile("services/" + serviceName + "/.env." + profile, serviceName, envProperties);
+        // TODO перенести в другой метод (хотя бы loadFromFile)
+        environment.getPropertySources().addFirst(new MapPropertySource("dotenv", envProperties));
     }
 
     /**
      * Загружает переменные из указанного .env-файла, но не перезаписывает уже заданные значения.
      */
-    private static void loadFromFile(String fileName) {
+    private static void loadFromFile(String fileName, String serviceName, Map<String, Object> envProperties) {
         System.out.println("!!!!!!!!!!!!! Attempting to load file: " + fileName);
         Dotenv dotenv = Dotenv.configure()
                 .filename(fileName)
@@ -49,34 +59,52 @@ public class DotenvLoader {
                 .ignoreIfMalformed()
                 .load();
 
+        // Проверяем Docker secrets
+        String secretFile = "/run/secrets/" + serviceName + "_env_file";
+        if (new java.io.File(secretFile).exists()) {
+            System.out.println("!!!!!!!!!!!!! Загрузка секретов из: " + secretFile);
+            try (BufferedReader reader = new BufferedReader(new FileReader(secretFile))) {
+                String line;
+                while ((line = reader.readLine()) != null) {
+                    if (!line.trim().isEmpty() && !line.startsWith("#")) {
+                        String[] parts = line.split("=", 2);
+                        if (parts.length == 2) {
+                            String key = parts[0].trim();
+                            String value = parts[1].trim();
+                            if (!key.isEmpty()) {
+                                boolean alreadyDefined = System.getenv(key) != null || System.getProperty(key) != null;
+                                if (!alreadyDefined) {
+                                    System.setProperty(key, value);
+                                    envProperties.put(key, value);
+                                    System.out.println("!!!!!!!!!!!!!! Set property: " + key + "=" + value);
+                                } else {
+                                    System.out.println("!!!!!!!!!!!!!! Пропущено (уже задано): " + key);
+                                }
+                            }
+                        }
+                    }
+                }
+                System.out.println("!!!!!!!!!!!!! Секреты загружены из: " + secretFile);
+            } catch (Exception e) {
+                System.err.println("!!!!!!!!!!!!! Ошибка загрузки секрета: " + e.getMessage());
+            }
+        } else {
+            System.out.println("!!!!!!!!!!!!! Секрет не найден: " + secretFile);
+        }
+
+        // TODO переделать вручную чтобы отказаться от dotenv библиотеки
         dotenv.entries().forEach(entry -> {
             String key = entry.getKey();
             String value = entry.getValue();
-
-            boolean alreadyDefined =
-                    System.getenv(key) != null || System.getProperty(key) != null;
-
+            boolean alreadyDefined = System.getenv(key) != null || System.getProperty(key) != null;
             if (!alreadyDefined) {
                 System.setProperty(key, value);
+                envProperties.put(key, value);
                 System.out.println("!!!!!!!!!!!!!! Set property: " + key + "=" + value);
+            } else {
+                System.out.println("!!!!!!!!!!!!!! Пропущено (уже задано): " + key);
             }
-            System.out.println("!!!!!!!!!!!!!!!!!!!!!!!!!!! Loaded env file: " + fileName);
+            System.out.println("!!!!!!!!!!!!!!!!!!!!!!!!!!! Loaded env file: " + fileName + " or secret: " + secretFile);
         });
     }
-
-//    // пример без dotenv-java (не тестил)
-//    private static void loadFromFile(String filename) {
-//        try (BufferedReader reader = new BufferedReader(new FileReader(filename))) {
-//            reader.lines()
-//                    .map(String::trim)
-//                    .filter(line -> !line.startsWith("#") && line.contains("="))
-//                    .forEach(line -> {
-//                        String[] parts = line.split("=", 2);
-//                        if (parts.length == 2) {
-//                            System.setProperty(parts[0].trim(), parts[1].trim());
-//                        }
-//                    });
-//        } catch (IOException ignored) {
-//        }
-//    }
 }
