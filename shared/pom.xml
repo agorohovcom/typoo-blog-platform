@@ -20,11 +20,5 @@
             <groupId>org.springframework.boot</groupId>
             <artifactId>spring-boot</artifactId>
         </dependency>
-        <!-- https://github.com/cdimascio/java-dotenv -->
-        <dependency>
-            <groupId>io.github.cdimascio</groupId>
-            <artifactId>java-dotenv</artifactId>
-            <version>5.2.2</version>
-        </dependency>
     </dependencies>
 </project>
