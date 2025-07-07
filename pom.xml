@@ -20,6 +20,7 @@
         <lombok.version>1.18.38</lombok.version>
         <mapstruct.version>1.6.3</mapstruct.version>
         <spring-cloud.version>2024.0.0</spring-cloud.version>
+        <shared.version>0.0.1-SNAPSHOT</shared.version>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
     </properties>
 
@@ -66,6 +67,11 @@
                 <version>${spring-cloud.version}</version>
                 <type>pom</type>
                 <scope>import</scope>
+            </dependency>
+            <dependency>
+                <groupId>com.agorohov</groupId>
+                <artifactId>shared</artifactId>
+                <version>${shared.version}</version>
             </dependency>
         </dependencies>
     </dependencyManagement>

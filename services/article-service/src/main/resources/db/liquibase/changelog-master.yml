@@ -1,0 +1,3 @@
+#databaseChangeLog:
+#  - include:
+#      file: db/liquibase/changelogs/changelog-tables.yml

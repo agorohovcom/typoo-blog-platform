@@ -39,6 +39,10 @@
             <artifactId>postgresql</artifactId>
         </dependency>
         <dependency>
+            <groupId>org.liquibase</groupId>
+            <artifactId>liquibase-core</artifactId>
+        </dependency>
+        <dependency>
             <groupId>org.projectlombok</groupId>
             <artifactId>lombok</artifactId>
             <scope>provided</scope>
@@ -46,11 +50,6 @@
         <dependency>
             <groupId>org.mapstruct</groupId>
             <artifactId>mapstruct</artifactId>
-        </dependency>
-        <dependency>
-            <groupId>com.agorohov</groupId>
-            <artifactId>shared</artifactId>
-            <version>0.0.1-SNAPSHOT</version>
         </dependency>
         <!-- В article-service, config-server и gateway -->
         <dependency>
@@ -60,6 +59,11 @@
         <dependency>
             <groupId>org.springframework.boot</groupId>
             <artifactId>spring-boot-starter-actuator</artifactId>
+        </dependency>
+        <!-- Общий модуль shared -->
+        <dependency>
+            <groupId>com.agorohov</groupId>
+            <artifactId>shared</artifactId>
         </dependency>
     </dependencies>
 
