@@ -1,0 +1,65 @@
+services:
+  article-db:
+    image: postgres:17
+    container_name: typoo_article_db_container
+    env_file:
+      - .env
+    ports:
+      - "5435:5432"
+    environment:
+      POSTGRES_DB: ${TYPOO_ARTICLE_DB_NAME}
+      POSTGRES_USER: ${TYPOO_ARTICLE_DB_USERNAME}
+      POSTGRES_PASSWORD: ${TYPOO_ARTICLE_DB_PASSWORD}
+    command: [ "postgres", "-c", "max_connections=1000" ]
+    volumes:
+      - typoo_article_db_data:/var/lib/postgresql/data
+    networks:
+      - typoo_network
+    healthcheck:
+      test: [ "CMD-SHELL", "pg_isready -U ${TYPOO_ARTICLE_DB_USERNAME} -d ${TYPOO_ARTICLE_DB_NAME}" ]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+    restart: unless-stopped
+
+  consul:
+    image: consul:1.15.4
+    container_name: typoo-consul-container
+    ports:
+      - "8500:8500"
+    networks:
+      - typoo_network
+    command: "consul agent -dev -client=0.0.0.0"
+
+  article-service:
+    build:
+      context: .
+      dockerfile: docker/Dockerfile
+      args:
+        SERVICE_NAME: article-service
+        ACTIVE_PROFILE: ${SPRING_PROFILES_ACTIVE:-docker}
+    environment:
+      SPRING_APPLICATION_NAME: article-service
+      # Задаём профиль
+      SPRING_PROFILES_ACTIVE: docker
+    secrets:
+      - article-service_env_file
+    ports:
+      - "8081:8081"
+    depends_on:
+      article-db:
+        condition: service_healthy
+    networks:
+      - typoo_network
+    restart: unless-stopped
+
+secrets:
+  article-service_env_file:
+    file: ./services/article-service/.env.${SPRING_PROFILES_ACTIVE:-docker}
+
+volumes:
+  typoo_article_db_data:
+
+networks:
+  typoo_network:
+    driver: bridge

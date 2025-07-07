@@ -16,13 +16,17 @@
         <maven.compiler.target.version>21</maven.compiler.target.version>
         <maven-compiler-plugin.version>3.14.0</maven-compiler-plugin.version>
         <spring.boot.version>3.4.4</spring.boot.version>
+        <postgresql.version>42.7.5</postgresql.version>
         <lombok.version>1.18.38</lombok.version>
         <mapstruct.version>1.6.3</mapstruct.version>
+        <spring-cloud.version>2024.0.0</spring-cloud.version>
+        <shared.version>0.0.1-SNAPSHOT</shared.version>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
     </properties>
 
     <modules>
-        <module>article-service</module>
+        <module>shared</module>
+        <module>services/article-service</module>
     </modules>
 
     <dependencyManagement>
@@ -33,6 +37,11 @@
                 <version>${spring.boot.version}</version>
                 <type>pom</type>
                 <scope>import</scope>
+            </dependency>
+            <dependency>
+                <groupId>org.postgresql</groupId>
+                <artifactId>postgresql</artifactId>
+                <version>${postgresql.version}</version>
             </dependency>
             <dependency>
                 <groupId>org.projectlombok</groupId>
@@ -51,6 +60,18 @@
                 <artifactId>mapstruct-processor</artifactId>
                 <version>${mapstruct.version}</version>
                 <scope>provided</scope>
+            </dependency>
+            <dependency>
+                <groupId>org.springframework.cloud</groupId>
+                <artifactId>spring-cloud-dependencies</artifactId>
+                <version>${spring-cloud.version}</version>
+                <type>pom</type>
+                <scope>import</scope>
+            </dependency>
+            <dependency>
+                <groupId>com.agorohov</groupId>
+                <artifactId>shared</artifactId>
+                <version>${shared.version}</version>
             </dependency>
         </dependencies>
     </dependencyManagement>

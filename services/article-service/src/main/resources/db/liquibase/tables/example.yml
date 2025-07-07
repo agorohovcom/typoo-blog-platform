@@ -1,0 +1,73 @@
+databaseChangeLog:
+  - changeSet:
+      id: 007-create-transactions-table
+      author: agorohov
+      changes:
+        - createTable:
+            tableName: transactions
+            columns:
+              - column:
+                  name: id
+                  type: BIGINT
+                  autoIncrement: true
+                  constraints:
+                    primaryKey: true
+                    nullable: false
+              - column:
+                  name: cabinet_id
+                  type: BIGINT
+                  constraints:
+                    nullable: false
+                    foreignKeyName: fk_transaction_cabinet
+                    references: cabinets(user_id)
+              - column:
+                  name: created_at
+                  type: TIMESTAMP
+                  defaultValueComputed: CURRENT_TIMESTAMP
+                  constraints:
+                    nullable: false
+              - column:
+                  name: last_change_at
+                  type: TIMESTAMP
+                  constraints:
+                    nullable: false
+              - column:
+                  name: amount
+                  type: DECIMAL(19, 2)
+                  constraints:
+                    nullable: false
+              - column:
+                  name: transaction_type
+                  type: VARCHAR(50)
+                  constraints:
+                    nullable: false
+              - column:
+                  name: transaction_status
+                  type: VARCHAR(50)
+                  constraints:
+                    nullable: false
+              - column:
+                  name: write_off_account_id
+                  type: BIGINT
+                  constraints:
+                    foreignKeyName: fk_transaction_write_off_account
+                    references: bank_accounts(id)
+                    nullable: false
+              - column:
+                  name: beneficiary_bank
+                  type: VARCHAR(50)
+              - column:
+                  name: beneficiary_account_number
+                  type: VARCHAR(20)
+              - column:
+                  name: beneficiary_phone_number
+                  type: VARCHAR(20)
+              - column:
+                  name: category_id
+                  type: BIGINT
+                  constraints:
+                    foreignKeyName: fk_transaction_category
+                    references: categories(id)
+              - column:
+                  name: comment
+                  type: VARCHAR(255)
