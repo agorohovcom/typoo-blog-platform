@@ -31,6 +31,26 @@ services:
       - typoo_network
     command: "consul agent -dev -client=0.0.0.0"
 
+  config-server:
+    build:
+      context: .
+      dockerfile: docker/Dockerfile
+      args:
+        SERVICE_NAME: config-server
+        ACTIVE_PROFILE: native
+    environment:
+      SPRING_APPLICATION_NAME: config-server
+      SPRING_PROFILES_ACTIVE: native
+    ports:
+      - "8888:8888"
+    volumes:
+      - ./services/config-server/config:/services/config-server/config
+    depends_on:
+      - consul
+    networks:
+      - typoo_network
+    restart: unless-stopped
+
   article-service:
     build:
       context: .
@@ -40,7 +60,6 @@ services:
         ACTIVE_PROFILE: ${SPRING_PROFILES_ACTIVE:-docker}
     environment:
       SPRING_APPLICATION_NAME: article-service
-      # Задаём профиль
       SPRING_PROFILES_ACTIVE: docker
     secrets:
       - article-service_env_file
@@ -49,6 +68,8 @@ services:
     depends_on:
       article-db:
         condition: service_healthy
+      config-server:
+        condition: service_started
     networks:
       - typoo_network
     restart: unless-stopped

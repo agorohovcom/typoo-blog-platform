@@ -10,6 +10,8 @@ import java.util.Map;
 
 public class DotenvLoader {
 
+//    private static boolean alreadyRun = false;
+
     /**
      * Загружает переменные окружения из файлов `.env.{profile}`,
      * находящихся в модулях микросервисов,
@@ -17,6 +19,11 @@ public class DotenvLoader {
      * Если профиль не задан — по умолчанию `dev`.
      */
     public static void loadEnvironmentVariables(ConfigurableEnvironment environment) {
+//        if (alreadyRun) {
+//            return; // Пропускаем, если уже выполнялся
+//        }
+//        alreadyRun = true;
+
         String profile = environment.getProperty("spring.profiles.active",
                 System.getenv("SPRING_PROFILES_ACTIVE") != null
                         ? System.getenv("SPRING_PROFILES_ACTIVE")
@@ -80,6 +87,7 @@ public class DotenvLoader {
                                     System.setProperty(key, value);
                                     envProperties.put(key, value);
                                     fileLoaded = true;
+//                                    System.out.println("DotenvLoader: Set property: " + key);
                                 }
                             }
                         }
