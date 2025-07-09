@@ -1,4 +1,5 @@
 **/target/
+**/build
 **/node_modules/
 **/.git/
 **/.idea/
@@ -6,3 +7,6 @@
 *.iml
 .DS_Store
 *.log
+.git
+.gitignore
+*.md
