@@ -37,14 +37,16 @@ services:
       dockerfile: docker/Dockerfile
       args:
         SERVICE_NAME: config-server
-        ACTIVE_PROFILE: native
+    #        ACTIVE_PROFILE: docker
     environment:
       SPRING_APPLICATION_NAME: config-server
-      SPRING_PROFILES_ACTIVE: native
+      SPRING_PROFILES_ACTIVE: docker
     ports:
       - "8888:8888"
     volumes:
       - ./services/config-server/config:/services/config-server/config
+    secrets:
+      - config-server_env_file
     depends_on:
       - consul
     networks:
@@ -57,7 +59,7 @@ services:
       dockerfile: docker/Dockerfile
       args:
         SERVICE_NAME: article-service
-        ACTIVE_PROFILE: ${SPRING_PROFILES_ACTIVE:-docker}
+    #        ACTIVE_PROFILE: ${SPRING_PROFILES_ACTIVE:-docker}
     environment:
       SPRING_APPLICATION_NAME: article-service
       SPRING_PROFILES_ACTIVE: docker
@@ -75,6 +77,8 @@ services:
     restart: unless-stopped
 
 secrets:
+  config-server_env_file:
+    file: ./services/config-server/.env.${SPRING_PROFILES_ACTIVE:-docker}
   article-service_env_file:
     file: ./services/article-service/.env.${SPRING_PROFILES_ACTIVE:-docker}
 

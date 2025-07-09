@@ -11,7 +11,7 @@ COPY ../../services/${SERVICE_NAME} ./services/${SERVICE_NAME}
 #COPY services/${SERVICE_NAME} ./services/${SERVICE_NAME}
 # Собираем зависимость shared и сам сервис
 #RUN mvn clean install -DskipTests -pl shared,services/${SERVICE_NAME} -am --non-recursive
-RUN #mvn clean install -DskipTests -pl shared,services/${SERVICE_NAME} -am
+#RUN mvn clean install -DskipTests -pl shared,services/${SERVICE_NAME} -am
 RUN mvn clean install -DskipTests --non-recursive
 
 # 2. Этап рантайма
