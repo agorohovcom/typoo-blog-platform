@@ -1,7 +1,7 @@
 services:
   article-db:
     image: postgres:17
-    container_name: typoo_article_db_container
+    #    container_name: typoo_article_db_container
     env_file:
       - .env
     ports:
@@ -24,7 +24,7 @@ services:
 
   consul:
     image: consul:1.15.4
-    container_name: typoo-consul-container
+    #    container_name: typoo-consul-container
     ports:
       - "8500:8500"
     networks:
@@ -37,10 +37,9 @@ services:
       dockerfile: docker/Dockerfile
       args:
         SERVICE_NAME: config-server
-    #        ACTIVE_PROFILE: docker
     environment:
       SPRING_APPLICATION_NAME: config-server
-      SPRING_PROFILES_ACTIVE: docker
+      SPRING_PROFILES_ACTIVE: ${SPRING_PROFILES_ACTIVE}
     ports:
       - "8888:8888"
     volumes:
@@ -59,10 +58,9 @@ services:
       dockerfile: docker/Dockerfile
       args:
         SERVICE_NAME: article-service
-    #        ACTIVE_PROFILE: ${SPRING_PROFILES_ACTIVE:-docker}
     environment:
       SPRING_APPLICATION_NAME: article-service
-      SPRING_PROFILES_ACTIVE: docker
+      SPRING_PROFILES_ACTIVE: ${SPRING_PROFILES_ACTIVE}
     secrets:
       - article-service_env_file
     ports:
