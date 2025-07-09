@@ -8,9 +8,11 @@ public class DotenvEnvironmentPostProcessor implements EnvironmentPostProcessor 
 
     @Override
     public void postProcessEnvironment(ConfigurableEnvironment environment, SpringApplication application) {
-        BannerPrinter.printBanner();
-        System.out.println("DotenvEnvironmentPostProcessor: Starting");
-        DotenvLoader.loadEnvironmentVariables(environment);
-        System.out.println("DotenvEnvironmentPostProcessor: Finished");
+        if (application.getMainApplicationClass().isAnnotationPresent(EnableDotenvLoader.class)) {
+            BannerPrinter.printBanner();
+            System.out.println("DotenvEnvironmentPostProcessor: Starting");
+            DotenvLoader.loadEnvironmentVariables(environment);
+            System.out.println("DotenvEnvironmentPostProcessor: Finished");
+        }
     }
 }
