@@ -1,7 +1,6 @@
 services:
   article-db:
     image: postgres:17
-    #    container_name: typoo_article_db_container
     env_file:
       - .env
     ports:
@@ -24,7 +23,6 @@ services:
 
   consul:
     image: consul:1.15.4
-    #    container_name: typoo-consul-container
     ports:
       - "8500:8500"
     networks:
@@ -39,7 +37,7 @@ services:
         SERVICE_NAME: config-server
     environment:
       SPRING_APPLICATION_NAME: config-server
-      SPRING_PROFILES_ACTIVE: ${SPRING_PROFILES_ACTIVE}
+      SPRING_PROFILES_ACTIVE: ${SPRING_PROFILES_ACTIVE:-docker}
     ports:
       - "8888:8888"
     volumes:
@@ -52,6 +50,26 @@ services:
       - typoo_network
     restart: unless-stopped
 
+  gateway-server:
+    build:
+      context: .
+      dockerfile: docker/Dockerfile
+      args:
+        SERVICE_NAME: gateway-server
+    environment:
+      SPRING_APPLICATION_NAME: gateway-server
+      SPRING_PROFILES_ACTIVE: ${SPRING_PROFILES_ACTIVE:-docker}
+    ports:
+      - "8080:8080"
+    secrets:
+      - gateway-server_env_file
+    depends_on:
+      - consul
+      - config-server
+    networks:
+      - typoo_network
+    restart: unless-stopped
+
   article-service:
     build:
       context: .
@@ -60,15 +78,17 @@ services:
         SERVICE_NAME: article-service
     environment:
       SPRING_APPLICATION_NAME: article-service
-      SPRING_PROFILES_ACTIVE: ${SPRING_PROFILES_ACTIVE}
+      SPRING_PROFILES_ACTIVE: ${SPRING_PROFILES_ACTIVE:-docker}
     secrets:
       - article-service_env_file
-    ports:
-      - "8081:8081"
+    #    ports:
+    #      - "8081:8081"
     depends_on:
       article-db:
         condition: service_healthy
       config-server:
+        condition: service_started
+      gateway-server:
         condition: service_started
     networks:
       - typoo_network
@@ -77,6 +97,8 @@ services:
 secrets:
   config-server_env_file:
     file: ./services/config-server/.env.${SPRING_PROFILES_ACTIVE:-docker}
+  gateway-server_env_file:
+    file: ./services/gateway-server/.env.${SPRING_PROFILES_ACTIVE:-docker}
   article-service_env_file:
     file: ./services/article-service/.env.${SPRING_PROFILES_ACTIVE:-docker}
 
