@@ -51,7 +51,6 @@
             <groupId>org.mapstruct</groupId>
             <artifactId>mapstruct</artifactId>
         </dependency>
-        <!-- В микросервисах, config-server и gateway-server -->
         <dependency>
             <groupId>org.springframework.cloud</groupId>
             <artifactId>spring-cloud-starter-consul-discovery</artifactId>
@@ -64,11 +63,6 @@
             <groupId>org.springframework.cloud</groupId>
             <artifactId>spring-cloud-starter-config</artifactId>
         </dependency>
-        <!--        <dependency>-->
-        <!--            <groupId>org.springframework.cloud</groupId>-->
-        <!--            <artifactId>spring-cloud-starter-bootstrap</artifactId>-->
-        <!--        </dependency>-->
-        <!-- Общий модуль shared -->
         <dependency>
             <groupId>com.agorohov</groupId>
             <artifactId>shared</artifactId>
