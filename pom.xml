@@ -15,7 +15,6 @@
         <maven.compiler.source.version>21</maven.compiler.source.version>
         <maven.compiler.target.version>21</maven.compiler.target.version>
         <maven-compiler-plugin.version>3.14.0</maven-compiler-plugin.version>
-        <!--        <spring.boot.version>3.4.4</spring.boot.version>-->
         <spring.boot.version>3.5.3</spring.boot.version>
         <postgresql.version>42.7.5</postgresql.version>
         <lombok.version>1.18.38</lombok.version>
@@ -27,8 +26,9 @@
 
     <modules>
         <module>shared</module>
-        <module>services/article-service</module>
         <module>services/config-server</module>
+        <module>services/gateway-server</module>
+        <module>services/article-service</module>
     </modules>
 
     <dependencyManagement>
