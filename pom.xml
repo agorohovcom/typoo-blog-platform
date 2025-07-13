@@ -21,6 +21,7 @@
         <lombok.version>1.18.38</lombok.version>
         <mapstruct.version>1.6.3</mapstruct.version>
         <caffeine.version>3.2.1</caffeine.version>
+        <micrometer-registry-prometheus.version>1.15.1</micrometer-registry-prometheus.version>
         <shared.version>0.0.1-SNAPSHOT</shared.version>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
     </properties>
@@ -54,7 +55,9 @@
                     </exclusion>
                 </exclusions>
             </dependency>
-            <!-- Чтобы убрать сообщение "Standard Commons Logging discovery in action with spring-jcl: please remove commons-logging.jar from classpath in order to avoid potential conflicts" -->
+            <!-- Чтобы убрать сообщение
+            "Standard Commons Logging discovery in action with spring-jcl:
+            please remove commons-logging.jar from classpath in order to avoid potential conflicts" -->
             <dependency>
                 <groupId>org.apache.httpcomponents</groupId>
                 <artifactId>httpclient</artifactId>
@@ -93,6 +96,11 @@
                 <groupId>com.github.ben-manes.caffeine</groupId>
                 <artifactId>caffeine</artifactId>
                 <version>${caffeine.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>io.micrometer</groupId>
+                <artifactId>micrometer-registry-prometheus</artifactId>
+                <version>${micrometer-registry-prometheus.version}</version>
             </dependency>
             <dependency>
                 <groupId>com.agorohov</groupId>

@@ -29,6 +29,16 @@ services:
       - typoo_network
     command: "consul agent -dev -client=0.0.0.0"
 
+  prometheus:
+    image: prom/prometheus:latest
+    volumes:
+      - ./prometheus/prometheus.yml:/etc/prometheus/prometheus.yml
+    ports:
+      - "9090:9090"
+    networks:
+      - typoo_network
+    restart: unless-stopped
+
   config-server:
     build:
       context: .
