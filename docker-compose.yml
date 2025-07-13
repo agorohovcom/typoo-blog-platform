@@ -28,6 +28,31 @@ services:
     networks:
       - typoo_network
     command: "consul agent -dev -client=0.0.0.0"
+    restart: unless-stopped
+
+  prometheus:
+    image: prom/prometheus:latest
+    volumes:
+      - ./prometheus/prometheus.yml:/etc/prometheus/prometheus.yml
+      - ./prometheus/alerts.yml:/etc/prometheus/alerts.yml
+    ports:
+      - "9090:9090"
+    networks:
+      - typoo_network
+    restart: unless-stopped
+
+  grafana:
+    image: grafana/grafana:latest
+    ports:
+      - "3000:3000"
+    environment:
+      - GF_SECURITY_ADMIN_USER=${GRAFANA_USER}
+      - GF_SECURITY_ADMIN_PASSWORD=${GRAFANA_PASSWORD}
+    volumes:
+      - typoo_grafana_data:/var/lib/grafana
+    networks:
+      - typoo_network
+    restart: unless-stopped
 
   config-server:
     build:
@@ -103,6 +128,7 @@ secrets:
     file: ./services/article-service/.env.${SPRING_PROFILES_ACTIVE:-docker}
 
 volumes:
+  typoo_grafana_data:
   typoo_article_db_data:
 
 networks:
