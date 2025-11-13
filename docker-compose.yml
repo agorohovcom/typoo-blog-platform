@@ -106,8 +106,8 @@ services:
       SPRING_PROFILES_ACTIVE: ${SPRING_PROFILES_ACTIVE:-docker}
     secrets:
       - article-service_env_file
-    #    ports:
-    #      - "8081:8081"
+    ports:
+      - "8081:8081"
     depends_on:
       article-db:
         condition: service_healthy
