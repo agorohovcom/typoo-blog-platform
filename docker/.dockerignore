@@ -1,12 +1,29 @@
+# Gradle
+.gradle/
+**/build/
+**/out/
+
+# Maven (на всякий случай)
 **/target/
-**/build
+
+# Node
 **/node_modules/
-**/.git/
+
+# IDE
 **/.idea/
+**/*.iml
+
+# Git
+**/.git/
+**/.gitignore
+
+# Environment files
 **/.env
-*.iml
-.DS_Store
+
+# Logs
 *.log
-.git
-.gitignore
+.DS_Store
 *.md
+
+# Gradle wrapper (если используем системный Gradle в Docker)
+!gradle/wrapper/gradle-wrapper.jar
