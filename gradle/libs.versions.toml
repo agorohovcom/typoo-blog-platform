@@ -1,10 +1,11 @@
 [versions]
 postgresql = "42.7.5"
-liquibase = "4.27.0"
+liquibase = "4.28.0"
 lombok = "1.18.38"
 mapstruct = "1.6.3"
 caffeine = "3.2.1"
 micrometer-prometheus = "1.15.1"
+testcontainers = "1.20.4"
 
 [libraries]
 # Spring Boot Starters
@@ -29,3 +30,6 @@ mapstruct = { module = "org.mapstruct:mapstruct", version.ref = "mapstruct" }
 mapstruct-processor = { module = "org.mapstruct:mapstruct-processor", version.ref = "mapstruct" }
 caffeine = { module = "com.github.ben-manes.caffeine:caffeine", version.ref = "caffeine" }
 micrometer-registry-prometheus = { module = "io.micrometer:micrometer-registry-prometheus", version.ref = "micrometer-prometheus" }
+# Testcontainers
+testcontainers-junit-jupiter = { module = "org.testcontainers:junit-jupiter", version.ref = "testcontainers" }
+testcontainers-postgresql = { module = "org.testcontainers:postgresql", version.ref = "testcontainers" }
