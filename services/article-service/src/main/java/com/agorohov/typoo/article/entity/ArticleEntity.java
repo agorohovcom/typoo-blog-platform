@@ -55,6 +55,13 @@ public class ArticleEntity {
     @Column(name = "status", nullable = false)
     private ArticleStatus status;
 
+    // Image
+    @Column(name = "cover_image_id")
+    private UUID coverImageId;
+
+    @Column(name = "cover_image_alt", length = 500)
+    private String coverImageAlt;
+
     // Associations
     @ManyToOne
     @JoinColumn(name = "category_id")
