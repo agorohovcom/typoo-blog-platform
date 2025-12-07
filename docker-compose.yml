@@ -1,6 +1,7 @@
 services:
   article-db:
     image: postgres:17
+    container_name: article-db
     env_file:
       - .env
     ports:
