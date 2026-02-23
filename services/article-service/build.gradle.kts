@@ -35,7 +35,7 @@ dependencies {
 }
 
 springBoot {
-    mainClass.set("com.agorohov.typoo.articleservice.ArticleServiceApplication")
+    mainClass.set("com.agorohov.typoo.article.ArticleServiceApplication")
 }
 
 tasks.withType<JavaCompile> {

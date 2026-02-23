@@ -47,8 +47,6 @@ typoo-blog-platform/
 │       └── content-service/          # Универсальный сервис файлов
 │
 ├── 🐳 Docker & инфраструктура
-│   ├── docker/
-│   │   └── Dockerfile               # Универсальный докерфайл
 │   ├── docker-compose.yml           # Локальное развертывание
 │   └── prometheus/                  # Мониторинг
 │
@@ -130,16 +128,6 @@ protobuf = "3.25.3"
 [libraries]
 grpc-starter = { module = "net.devh:grpc-spring-boot-starter" }
 protobuf-java = { module = "com.google.protobuf:protobuf-java" }
-```
-
-### Docker Optimizations
-```dockerfile
-# Мульти-стейдж сборка
-FROM gradle:9.2.0-jdk21-alpine AS builder
-FROM eclipse-temurin:21-jre-alpine
-
-# Кэширование зависимостей Gradle
-# Service-specific builds через ARG SERVICE_NAME
 ```
 
 ## 🛠️ Текущее состояние разработки
