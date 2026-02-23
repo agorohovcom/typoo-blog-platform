@@ -65,16 +65,9 @@ services:
 
   config-server:
     container_name: config-server
-    #    env_file:
-    #      - ./services/config-server/.env.docker
     build:
       context: .
       dockerfile: ./services/config-server/Dockerfile
-    environment:
-      SPRING_APPLICATION_NAME: config-server
-      SPRING_PROFILES_ACTIVE: ${SPRING_PROFILES_ACTIVE:-docker}
-    #      CONSUL_HOST: consul
-    #      CONSUL_PORT: 8500
     ports:
       - "8888:8888"
     volumes:
@@ -94,16 +87,9 @@ services:
 
   gateway-server:
     container_name: gateway-server
-    #    env_file:
-    #      - ./services/gateway-server/.env.docker
     build:
       context: .
       dockerfile: ./services/gateway-server/Dockerfile
-    environment:
-      SPRING_APPLICATION_NAME: gateway-server
-      SPRING_PROFILES_ACTIVE: ${SPRING_PROFILES_ACTIVE:-docker}
-    #      CONSUL_HOST: consul
-    #      CONSUL_PORT: 8500
     ports:
       - "8080:8080"
     secrets:
@@ -119,16 +105,9 @@ services:
 
   article-service:
     container_name: article-service
-    #    env_file:
-    #      - ./services/article-service/.env.docker
     build:
       context: .
       dockerfile: ./services/article-service/Dockerfile
-    environment:
-      SPRING_APPLICATION_NAME: article-service
-      SPRING_PROFILES_ACTIVE: ${SPRING_PROFILES_ACTIVE:-docker}
-    #      CONSUL_HOST: consul
-    #      CONSUL_PORT: 8500
     secrets:
       - article-service_env_file
     ports:
