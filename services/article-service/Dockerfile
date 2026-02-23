@@ -10,8 +10,8 @@ COPY shared shared
 COPY services/article-service/build.gradle.kts services/article-service/
 COPY services/article-service/src services/article-service/src
 
-# Копируем .env файл
-COPY services/article-service/.env.docker services/article-service/
+# # Копируем .env файл
+# COPY services/article-service/.env.docker services/article-service/
 
 # Собираем только текущий сервис
 RUN gradle clean :services:article-service:bootJar -x test --no-daemon
@@ -23,8 +23,8 @@ WORKDIR /app
 # Копируем собранный JAR
 COPY --from=builder /app/services/article-service/build/libs/*.jar app.jar
 
-# Копируем .env файл
-COPY --from=builder /app/services/article-service/.env.docker services/article-service/
+# # Копируем .env файл
+# COPY --from=builder /app/services/article-service/.env.docker services/article-service/
 
 ENV SPRING_PROFILES_ACTIVE=docker
 
