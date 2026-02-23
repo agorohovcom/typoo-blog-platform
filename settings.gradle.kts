@@ -14,7 +14,16 @@ pluginManagement {
     }
 }
 
+// Включаем только те модули, чьи директории существуют
+val modules = listOf("config-server", "gateway-server", "article-service")
+
+modules.forEach { moduleName ->
+    val moduleDir = file("services/$moduleName")
+    if (moduleDir.exists() && moduleDir.isDirectory) {
+        include(":services:$moduleName")
+    } else {
+        println("Skipping module '$moduleName' - directory not found")
+    }
+}
+
 include(":shared")
-include(":services:config-server")
-include(":services:gateway-server")
-include(":services:article-service")

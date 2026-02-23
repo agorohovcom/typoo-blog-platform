@@ -1,6 +1,7 @@
 services:
   article-db:
     image: postgres:17
+    container_name: article-db
     env_file:
       - .env
     ports:
@@ -29,6 +30,12 @@ services:
       - typoo_network
     command: "consul agent -dev -client=0.0.0.0"
     restart: unless-stopped
+    healthcheck:
+      test: [ "CMD", "consul", "members" ]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+      start_period: 10s
 
   prometheus:
     image: prom/prometheus:latest
@@ -43,6 +50,8 @@ services:
 
   grafana:
     image: grafana/grafana:latest
+    env_file:
+      - .env
     ports:
       - "3000:3000"
     environment:
@@ -55,14 +64,17 @@ services:
     restart: unless-stopped
 
   config-server:
+    container_name: config-server
+    #    env_file:
+    #      - ./services/config-server/.env.docker
     build:
       context: .
-      dockerfile: docker/Dockerfile
-      args:
-        SERVICE_NAME: config-server
+      dockerfile: ./services/config-server/Dockerfile
     environment:
       SPRING_APPLICATION_NAME: config-server
       SPRING_PROFILES_ACTIVE: ${SPRING_PROFILES_ACTIVE:-docker}
+    #      CONSUL_HOST: consul
+    #      CONSUL_PORT: 8500
     ports:
       - "8888:8888"
     volumes:
@@ -73,37 +85,50 @@ services:
       - consul
     networks:
       - typoo_network
+    healthcheck:
+      test: [ "CMD-SHELL", "wget --no-verbose --tries=1 --spider http://localhost:8888/actuator/health || exit 1" ]
+      interval: 10s
+      timeout: 5s
+      retries: 5
     restart: unless-stopped
 
   gateway-server:
+    container_name: gateway-server
+    #    env_file:
+    #      - ./services/gateway-server/.env.docker
     build:
       context: .
-      dockerfile: docker/Dockerfile
-      args:
-        SERVICE_NAME: gateway-server
+      dockerfile: ./services/gateway-server/Dockerfile
     environment:
       SPRING_APPLICATION_NAME: gateway-server
       SPRING_PROFILES_ACTIVE: ${SPRING_PROFILES_ACTIVE:-docker}
+    #      CONSUL_HOST: consul
+    #      CONSUL_PORT: 8500
     ports:
       - "8080:8080"
     secrets:
       - gateway-server_env_file
     depends_on:
-      - consul
-      - config-server
+      consul:
+        condition: service_healthy
+      config-server:
+        condition: service_healthy
     networks:
       - typoo_network
     restart: unless-stopped
 
   article-service:
+    container_name: article-service
+    #    env_file:
+    #      - ./services/article-service/.env.docker
     build:
       context: .
-      dockerfile: docker/Dockerfile
-      args:
-        SERVICE_NAME: article-service
+      dockerfile: ./services/article-service/Dockerfile
     environment:
       SPRING_APPLICATION_NAME: article-service
       SPRING_PROFILES_ACTIVE: ${SPRING_PROFILES_ACTIVE:-docker}
+    #      CONSUL_HOST: consul
+    #      CONSUL_PORT: 8500
     secrets:
       - article-service_env_file
     ports:
@@ -112,9 +137,11 @@ services:
       article-db:
         condition: service_healthy
       config-server:
-        condition: service_started
+        condition: service_healthy
       gateway-server:
         condition: service_started
+      consul:
+        condition: service_healthy
     networks:
       - typoo_network
     restart: unless-stopped

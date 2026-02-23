@@ -15,6 +15,8 @@ public class DotenvEnvironmentPostProcessor implements EnvironmentPostProcessor 
             return;
         }
 
+//        if ("false".equalsIgnoreCase(System.getenv("DOTENV_ENABLED"))) return;
+
         BannerPrinter.printBanner();
         System.out.println("DotenvEnvironmentPostProcessor: Starting");
         DotenvLoader.loadEnvironmentVariables(environment);

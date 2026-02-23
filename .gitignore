@@ -43,3 +43,5 @@ build/
 !.env.docker.example
 !.env.test.example
 !.env.prod.example
+
+projectdump.txt
