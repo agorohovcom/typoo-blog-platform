@@ -1,40 +1,35 @@
 package com.agorohov.typoo.article.filter;
 
+import com.agorohov.shared.logging.HttpLogHelper;
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.core.annotation.Order;
-import org.springframework.http.MediaType;
 import org.springframework.stereotype.Component;
 import org.springframework.web.filter.OncePerRequestFilter;
 import org.springframework.web.util.ContentCachingRequestWrapper;
 import org.springframework.web.util.ContentCachingResponseWrapper;
 
 import java.io.IOException;
-import java.nio.charset.StandardCharsets;
-import java.util.Arrays;
 import java.util.Collections;
-import java.util.StringJoiner;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
+import java.util.stream.Collectors;
 
 @Slf4j
 @Component
 @Order(1)
 public class RequestLoggingFilter extends OncePerRequestFilter {
 
-    private static final int MAX_PAYLOAD_LENGTH = 8192;
-    private static final int CONTENT_CACHE_LIMIT = 1024 * 64;
-    private static final String[] SHOULD_NOT_FILTER = {
+    private static final int CONTENT_CACHE_LIMIT = 1024 * 64;   // 64 Kb
+    private static final Set<String> SHOULD_NOT_FILTER = Set.of(
             "/actuator",
-            "/health"
-    };
-    private static final String[] HEADERS_SHOULD_MASKED = {
-            "Authorization",
-            "Cookie"
-    };
-    private static final String MASKED = "[MASKED]";
-    private static final String EMPTY_BODY = "[empty body]";
+            "/health",
+            "/prometheus"
+    );
 
     @Override
     protected void doFilterInternal(
@@ -42,8 +37,8 @@ public class RequestLoggingFilter extends OncePerRequestFilter {
             HttpServletResponse response,
             FilterChain filterChain
     ) throws ServletException, IOException {
-        ContentCachingRequestWrapper wrappedRequest = new ContentCachingRequestWrapper(request, CONTENT_CACHE_LIMIT);
-        ContentCachingResponseWrapper wrappedResponse = new ContentCachingResponseWrapper(response);
+        var wrappedRequest = new ContentCachingRequestWrapper(request, CONTENT_CACHE_LIMIT);
+        var wrappedResponse = new ContentCachingResponseWrapper(response);
 
         long startTime = System.currentTimeMillis();
 
@@ -59,69 +54,49 @@ public class RequestLoggingFilter extends OncePerRequestFilter {
     private void logRequest(ContentCachingRequestWrapper request) {
         String method = request.getMethod();
         String uri = request.getRequestURI();
-        String query = request.getQueryString() != null ? "?" + request.getQueryString() : "";
+        String query = request.getQueryString();
 
-        String headers = getHeadersMasked(request);
+        Map<String, List<String>> headers = Collections.list(request.getHeaderNames()).stream()
+                .collect(Collectors.toMap(
+                        name -> name,
+                        name -> Collections.list(request.getHeaders(name))
+                ));
 
-        byte[] buf = request.getContentAsByteArray();
+        byte[] bodyBytes = request.getContentAsByteArray();
+        String contentType = request.getContentType();
 
-        String displayBody = EMPTY_BODY;
-
-        if (buf.length > 0) {
-            String contentType = request.getContentType();
-            boolean shouldLogBody = contentType != null &&
-                    contentType.contains(MediaType.APPLICATION_JSON_VALUE);
-
-            if (shouldLogBody) {
-                int len = Math.min(buf.length, MAX_PAYLOAD_LENGTH);
-                displayBody = new String(buf, 0, len, StandardCharsets.UTF_8);
-                if (buf.length > MAX_PAYLOAD_LENGTH) displayBody += " [truncated]";
-            } else {
-                displayBody = "[binary or large content skipped]";
-            }
-        }
-
-        log.info("""
-                        -> Request
-                        method  : {}
-                        uri     : {}{}
-                        headers : {}
-                        body    : {}
-                        """,
+        String logMessage = HttpLogHelper.formatRequest(
                 method,
-                uri, query,
+                uri,
+                query,
                 headers,
-                displayBody
+                bodyBytes,
+                contentType
         );
+
+        log.info(logMessage);
     }
 
     private void logResponse(ContentCachingResponseWrapper response, long startTime) {
         long duration = System.currentTimeMillis() - startTime;
-        log.info("""
-                        <- Response
-                        status  : {}
-                        time    : {} ms
-                        """,
-                response.getStatus(),
-                duration
-        );
-    }
 
-    private String getHeadersMasked(ContentCachingRequestWrapper request) {
-        StringJoiner headersJoiner = new StringJoiner(", ");
-        Collections.list(request.getHeaderNames()).forEach(name -> {
-            String value = Arrays.stream(HEADERS_SHOULD_MASKED).anyMatch(name::equalsIgnoreCase)
-                    ? MASKED
-                    : request.getHeader(name);
-            headersJoiner.add(name + ": " + value);
-        });
-        return headersJoiner.toString();
+        byte[] bodyBytes = response.getContentAsByteArray();
+        String contentType = response.getContentType();
+        int status = response.getStatus();
+
+        String logMessage = HttpLogHelper.formatResponse(
+                status,
+                duration,
+                bodyBytes,
+                contentType
+        );
+
+        log.info(logMessage);
     }
 
     @Override
     protected boolean shouldNotFilter(HttpServletRequest request) {
         String path = request.getRequestURI();
-        return Arrays.stream(SHOULD_NOT_FILTER)
-                .anyMatch(path::startsWith);
+        return SHOULD_NOT_FILTER.stream().anyMatch(path::startsWith);
     }
 }
