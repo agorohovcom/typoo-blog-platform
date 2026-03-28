@@ -20,7 +20,7 @@ import java.time.Instant;
 import java.util.UUID;
 
 @Entity
-@Table(name = "article_revisions")
+@Table(name = "article_revision")
 @Getter
 @Setter
 @NoArgsConstructor

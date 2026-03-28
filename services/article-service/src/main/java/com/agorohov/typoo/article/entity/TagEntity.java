@@ -13,10 +13,8 @@ import lombok.NoArgsConstructor;
 import lombok.Setter;
 import lombok.ToString;
 
-import java.util.UUID;
-
 @Entity
-@Table(name = "tags")
+@Table(name = "tag")
 @Getter
 @Setter
 @NoArgsConstructor
@@ -26,8 +24,8 @@ import java.util.UUID;
 public class TagEntity {
 
     @Id
-    @GeneratedValue(strategy = GenerationType.UUID)
-    private UUID id;
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    private Integer id;
 
     @Column(nullable = false, unique = true, length = 50)
     private String name;

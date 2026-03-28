@@ -1,10 +1,12 @@
 package com.agorohov.typoo.article.entity;
 
 import com.agorohov.typoo.article.type.ArticleStatus;
+import jakarta.persistence.CascadeType;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.EnumType;
 import jakarta.persistence.Enumerated;
+import jakarta.persistence.FetchType;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
@@ -12,6 +14,7 @@ import jakarta.persistence.JoinColumn;
 import jakarta.persistence.JoinTable;
 import jakarta.persistence.ManyToMany;
 import jakarta.persistence.ManyToOne;
+import jakarta.persistence.OneToOne;
 import jakarta.persistence.Table;
 import lombok.AllArgsConstructor;
 import lombok.EqualsAndHashCode;
@@ -26,12 +29,12 @@ import java.util.Set;
 import java.util.UUID;
 
 @Entity
-@Table(name = "articles")
+@Table(name = "article")
 @Getter
 @Setter
 @NoArgsConstructor
 @AllArgsConstructor
-@ToString
+@ToString(exclude = {"tags", "seo"})
 @EqualsAndHashCode(of = "id")
 public class ArticleEntity {
 
@@ -53,7 +56,7 @@ public class ArticleEntity {
 
     @Enumerated(EnumType.STRING)
     @Column(name = "status", nullable = false)
-    private ArticleStatus status;
+    private ArticleStatus status = ArticleStatus.DRAFT;
 
     // Image
     @Column(name = "cover_image_id")
@@ -63,17 +66,20 @@ public class ArticleEntity {
     private String coverImageAlt;
 
     // Associations
-    @ManyToOne
+    @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "category_id")
     private CategoryEntity category;
 
-    @ManyToMany
+    @ManyToMany(fetch = FetchType.LAZY)
     @JoinTable(
             name = "article_tags",
             joinColumns = @JoinColumn(name = "article_id"),
             inverseJoinColumns = @JoinColumn(name = "tag_id")
     )
     private Set<TagEntity> tags = new HashSet<>();
+
+    @OneToOne(mappedBy = "article", cascade = CascadeType.ALL, orphanRemoval = true, fetch = FetchType.LAZY)
+    private ArticleSeoEntity seo;
 
     // Timestamp
     @Column(name = "created_at", nullable = false, updatable = false)
@@ -93,21 +99,8 @@ public class ArticleEntity {
     private Boolean allowComments = true;
 
     @Column(name = "featured", nullable = false)
-    private Boolean featured = false;
+    private Boolean featured = false;       // выделение статьи
 
     @Column(name = "is_pinned", nullable = false)
     private Boolean isPinned = false;
-
-    // SEO
-    @Column(name = "meta_title", length = 500)
-    private String metaTitle;               // <title>Мета-заголовок</title>
-
-    @Column(name = "meta_description", length = 1000)
-    private String metaDescription;         // <meta name="description" content="...">
-
-    @Column(name = "meta_keywords")
-    private String metaKeywords;            // <meta name="keywords" content="блог, горохов, java, backend">
-
-    @Column(name = "canonical_url", length = 1000)
-    private String canonicalUrl;            // <link rel="canonical" href="https://agorohov.com/правильный-url">
 }

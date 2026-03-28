@@ -1,4 +1,4 @@
-package com.agorohov.shared.logging;
+package com.agorohov.shared.utils.logging;
 
 import java.nio.charset.StandardCharsets;
 import java.util.LinkedHashMap;

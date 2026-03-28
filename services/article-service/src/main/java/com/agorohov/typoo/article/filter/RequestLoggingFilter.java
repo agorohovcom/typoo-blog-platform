@@ -1,6 +1,6 @@
 package com.agorohov.typoo.article.filter;
 
-import com.agorohov.shared.logging.HttpLogHelper;
+import com.agorohov.shared.utils.logging.HttpLogHelper;
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
@@ -31,6 +31,7 @@ public class RequestLoggingFilter extends OncePerRequestFilter {
             "/prometheus"
     );
 
+    @SuppressWarnings("NullableProblems")
     @Override
     protected void doFilterInternal(
             HttpServletRequest request,
