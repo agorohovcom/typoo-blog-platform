@@ -1,7 +1,9 @@
 package com.agorohov.typoo.article.service;
 
+import com.agorohov.shared.common.event.TypooEventPublisher;
 import com.agorohov.typoo.article.entity.ArticleEntity;
 import com.agorohov.typoo.article.entity.ArticleRevisionEntity;
+import com.agorohov.typoo.article.event.ArticleRevisionCreatedEvent;
 import com.agorohov.typoo.article.repository.ArticleRevisionRepository;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -17,9 +19,7 @@ import java.util.UUID;
 public class ArticleRevisionService {
 
     private final ArticleRevisionRepository articleRevisionRepository;
-
-    // todo вынести в конфиг класс
-    private static final int REVISION_MAX_COUNT = 10;
+    private final TypooEventPublisher eventPublisher;
 
     // todo не принимать Entity из другого сервиса!!! Использовать ДТО
     @Transactional
@@ -43,7 +43,16 @@ public class ArticleRevisionService {
         articleRevisionRepository.save(entity);
         log.info("Article revision number {} saved for article id {}", revisionNumber, articleEntity.getId());
 
-        // todo реализовать асинхронный ивент, который проверит не превышено ли кол-во ревизий и если да - удалит лишние
+        eventPublisher.publish(new ArticleRevisionCreatedEvent(articleEntity.getId()));
+    }
+
+    public int getCountRevisionsByArticleId(UUID articleId) {
+        return articleRevisionRepository.getCountRevisionsByArticleId(articleId);
+    }
+
+    @Transactional
+    public int deleteOldestRevisions(UUID articleId, int toDelete) {
+        return articleRevisionRepository.deleteOldestRevisions(articleId, toDelete);
     }
 
     private Optional<Integer> findLastRevisionNumberForArticle(UUID articleId) {
