@@ -8,7 +8,6 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.time.Instant;
 import java.util.Optional;
 import java.util.UUID;
 
@@ -40,7 +39,6 @@ public class ArticleRevisionService {
         entity.setCoverImageAlt(articleEntity.getCoverImageAlt());
         entity.setRevisionComment(revisionComment);
         entity.setRevisionNumber(revisionNumber);
-        entity.setCreatedAt(Instant.now());         // нужно ли вручную?
 
         articleRevisionRepository.save(entity);
         log.info("Article revision number {} saved for article id {}", revisionNumber, articleEntity.getId());

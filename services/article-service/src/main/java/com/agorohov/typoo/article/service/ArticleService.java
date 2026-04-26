@@ -24,7 +24,6 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.CollectionUtils;
 
-import java.time.Instant;
 import java.util.HashSet;
 import java.util.Set;
 import java.util.UUID;
@@ -63,8 +62,6 @@ public class ArticleService {
         newArticle.setSlug(request.getSlug());
         newArticle.setDescription(request.getDescription());
         newArticle.setContent(request.getContent());
-        newArticle.setStatus(ArticleStatus.DRAFT);
-        newArticle.setCreatedAt(Instant.now());     // нужно ли вручную?
         newArticle.setCategory(category);
         newArticle.setTags(tags);
         articleRepository.save(newArticle);
