@@ -70,8 +70,9 @@ services:
       dockerfile: ./services/config-server/Dockerfile
     ports:
       - "8888:8888"
-    volumes:
-      - ./services/config-server/config:/services/config-server/config
+    # раскомментировать при использовании volume для конфигов
+    #    volumes:
+    #      - ./services/config-server/config:/services/config-server/config
     secrets:
       - config-server_env_file
     depends_on:
@@ -92,6 +93,8 @@ services:
       dockerfile: ./services/gateway-server/Dockerfile
     ports:
       - "8080:8080"
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
     secrets:
       - gateway-server_env_file
     depends_on:
