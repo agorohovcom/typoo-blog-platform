@@ -23,7 +23,6 @@ import java.util.UUID;
 @RequiredArgsConstructor
 @Validated
 @RequestMapping("/v1")
-// TODO @PreAuthorize("hasRole('ADMIN')")
 public class ArticleAdminController {
 
     private final ArticleService articleService;

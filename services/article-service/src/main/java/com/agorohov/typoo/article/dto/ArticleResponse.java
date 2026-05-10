@@ -21,12 +21,11 @@ public class ArticleResponse {
 
     UUID coverImageId;
     String coverImageAlt;
-    String coverImageUrl;        // для фронта
 
     UUID categoryId;
     String categoryName;
 
-    Set<String> tags;            // или Set<TagDto>
+    Set<String> tags;            // todo Set<TagDto>
 
     Boolean allowComments;
     Boolean featured;
