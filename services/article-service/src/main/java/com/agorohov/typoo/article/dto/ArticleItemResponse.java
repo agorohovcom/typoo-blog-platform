@@ -9,15 +9,16 @@ import java.util.UUID;
 
 @Value
 @Builder
-public class ArticleListItem {
+public class ArticleItemResponse {
 
     UUID id;
     String title;
-    String slug;
     String description;
+    String slug;
     ArticleStatus status;
+    UUID coverImageId;
+    String coverImageAlt;
     Instant publishedAt;
-    String coverImageUrl;     // будет заполняться позже через Content Service
-    UUID categoryId;
+    Integer categoryId;
     String categoryName;
 }

@@ -1,9 +1,8 @@
 package com.agorohov.typoo.article.controller;
 
-import com.agorohov.typoo.article.dto.ArticleListItem;
+import com.agorohov.typoo.article.dto.ArticleItemResponse;
 import com.agorohov.typoo.article.dto.ArticleResponse;
 import com.agorohov.typoo.article.service.ArticleService;
-import com.agorohov.typoo.article.type.ArticleStatus;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -23,13 +22,12 @@ public class ArticlePublicController {
     private final ArticleService articleService;
 
     @GetMapping
-    public ResponseEntity<Page<ArticleListItem>> getArticles(
-            @PageableDefault(size = 10) Pageable pageable,
-            @RequestParam(required = false) ArticleStatus status,
-            @RequestParam(required = false) String categorySlug,
-            @RequestParam(required = false) String search
+    public ResponseEntity<Page<ArticleItemResponse>> getPublishedArticles(
+            @RequestParam(required = false) Integer categoryId,
+            @RequestParam(required = false) String search,
+            @PageableDefault(size = 10) Pageable pageable
     ) {
-        var page = articleService.getArticles(pageable, status, categorySlug, search);
+        var page = articleService.getPublishedArticleItems(categoryId, search, pageable);
         return ResponseEntity.ok(page);
     }
 

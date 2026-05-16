@@ -22,7 +22,7 @@ public class ArticleResponse {
     UUID coverImageId;
     String coverImageAlt;
 
-    UUID categoryId;
+    Integer categoryId;
     String categoryName;
 
     Set<String> tags;            // todo Set<TagDto>
@@ -34,9 +34,4 @@ public class ArticleResponse {
     Instant createdAt;
     Instant updatedAt;
     Instant publishedAt;
-
-    // SEO
-    String metaTitle;
-    String metaDescription;
-    String metaKeywords;
 }

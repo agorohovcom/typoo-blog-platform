@@ -1,7 +1,7 @@
 package com.agorohov.typoo.article.service;
 
 import com.agorohov.shared.common.exception.TypooException;
-import com.agorohov.typoo.article.dto.ArticleListItem;
+import com.agorohov.typoo.article.dto.ArticleItemResponse;
 import com.agorohov.typoo.article.dto.ArticleResponse;
 import com.agorohov.typoo.article.dto.ArticleStatusRequest;
 import com.agorohov.typoo.article.dto.CreateArticleRequest;
@@ -11,11 +11,13 @@ import com.agorohov.typoo.article.entity.ArticleSeoEntity;
 import com.agorohov.typoo.article.entity.CategoryEntity;
 import com.agorohov.typoo.article.entity.TagEntity;
 import com.agorohov.typoo.article.exception.ArticleErrorCode;
+import com.agorohov.typoo.article.mapper.ArticleMapper;
 import com.agorohov.typoo.article.repository.ArticleRepository;
 import com.agorohov.typoo.article.repository.ArticleSeoRepository;
 import com.agorohov.typoo.article.repository.CategoryRepository;
 import com.agorohov.typoo.article.repository.TagRepository;
-import com.agorohov.typoo.article.type.ArticleStatus;
+import jakarta.validation.Valid;
+import jakarta.validation.constraints.NotNull;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.Page;
@@ -23,6 +25,7 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.CollectionUtils;
+import org.springframework.validation.annotation.Validated;
 
 import java.util.HashSet;
 import java.util.Set;
@@ -31,6 +34,7 @@ import java.util.UUID;
 @Service
 @RequiredArgsConstructor
 @Slf4j
+@Validated
 public class ArticleService {
 
     private final ArticleRevisionService articleRevisionService;
@@ -43,7 +47,7 @@ public class ArticleService {
     private static final String CREATE_DRAFT_REVISION_COMMENT = "AUTO: First article draft created";
 
     @Transactional
-    public UUID createArticle(CreateArticleRequest request) {
+    public UUID createArticle(@NotNull @Valid CreateArticleRequest request) {
         log.debug("Creating article draft with title [{}]", request.getTitle());
 
         CategoryEntity category = null;
@@ -95,8 +99,15 @@ public class ArticleService {
 
     }
 
-    public Page<ArticleListItem> getArticles(Pageable pageable, ArticleStatus status, String categorySlug, String search) {
-        return null;
+    public Page<ArticleItemResponse> getPublishedArticleItems(
+            Integer categoryId,
+            String search,
+            @NotNull Pageable pageable
+    ) {
+        log.debug("Fetching published article items by category={}, search=[{}], page={}, size={}",
+                categoryId, search, pageable.getPageNumber(), pageable.getPageSize());
+        return articleRepository.findPublishedArticleItems(categoryId, search, pageable)
+                .map(ArticleMapper::toArticleItemResponse);
     }
 
     public ArticleResponse getBySlug(String slug) {
