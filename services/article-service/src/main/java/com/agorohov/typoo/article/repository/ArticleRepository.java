@@ -2,7 +2,6 @@ package com.agorohov.typoo.article.repository;
 
 import com.agorohov.typoo.article.entity.ArticleEntity;
 import com.agorohov.typoo.article.repository.projection.ArticleItemProjection;
-import com.agorohov.typoo.article.type.ArticleStatus;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.EntityGraph;
@@ -17,6 +16,30 @@ import java.util.UUID;
 @Repository
 public interface ArticleRepository extends JpaRepository<ArticleEntity, UUID> {
 
+    //    @Query("""
+//            SELECT
+//                a.id AS id,
+//                a.title AS title,
+//                a.description AS description,
+//                a.slug AS slug,
+//                a.status AS status,
+//                a.coverImageId AS coverImageId,
+//                a.coverImageAlt AS coverImageAlt,
+//                a.publishedAt AS publishedAt,
+//                c.id AS categoryId,
+//                c.name AS categoryName
+//            FROM ArticleEntity a
+//            LEFT JOIN a.category c
+//            WHERE a.status = 'PUBLISHED'
+//                AND a.deletedAt IS NULL
+//                AND (:categoryId IS NULL OR a.category.id = :categoryId)
+//                AND (:search IS NULL
+//                   OR a.title ILIKE CONCAT('%', CAST(:search AS TEXT), '%')
+//                   OR a.description ILIKE CONCAT('%', CAST(:search AS TEXT), '%'))
+//            ORDER BY
+//                a.publishedAt DESC,
+//                a.createdAt DESC
+//            """)
     @Query("""
             SELECT
                 a.id AS id,
@@ -34,9 +57,6 @@ public interface ArticleRepository extends JpaRepository<ArticleEntity, UUID> {
             WHERE a.status = 'PUBLISHED'
                 AND a.deletedAt IS NULL
                 AND (:categoryId IS NULL OR a.category.id = :categoryId)
-                AND (:search IS NULL OR
-                   LOWER(a.title) LIKE LOWER(CONCAT('%', :search, '%')) OR
-                   LOWER(a.description) LIKE LOWER(CONCAT('%', :search, '%')))
             ORDER BY
                 a.publishedAt DESC,
                 a.createdAt DESC
@@ -59,33 +79,33 @@ public interface ArticleRepository extends JpaRepository<ArticleEntity, UUID> {
 
     // ============================== ADMIN METHODS ====================================
 
-    @Query("""
-            SELECT
-                a.id AS id,
-                a.title AS title,
-                a.description AS description,
-                a.slug AS slug,
-                a.status AS status,
-                a.coverImageId AS coverImageId,
-                a.coverImageAlt AS coverImageAlt,
-                a.publishedAt AS publishedAt,
-                c.id AS categoryId,
-                c.name AS categoryName
-            FROM ArticleEntity a
-            LEFT JOIN a.category c
-            WHERE (:status IS NULL OR a.status = :status)
-                AND (:categoryId IS NULL OR a.category.id = :categoryId)
-                AND (:search IS NULL OR
-                    LOWER(a.title) LIKE LOWER(CONCAT('%', :search, '%')) OR
-                    LOWER(a.description) LIKE LOWER(CONCAT('%', :search, '%')))
-            ORDER BY
-                COALESCE(a.publishedAt, a.createdAt) DESC,
-                a.createdAt DESC
-            """)
-    Page<ArticleItemProjection> findArticleItemsForAdmin(
-            @Param("status") ArticleStatus status,
-            @Param("categoryId") Integer categoryId,
-            @Param("search") String search,
-            Pageable pageable
-    );
+//    @Query("""
+//            SELECT
+//                a.id AS id,
+//                a.title AS title,
+//                a.description AS description,
+//                a.slug AS slug,
+//                a.status AS status,
+//                a.coverImageId AS coverImageId,
+//                a.coverImageAlt AS coverImageAlt,
+//                a.publishedAt AS publishedAt,
+//                c.id AS categoryId,
+//                c.name AS categoryName
+//            FROM ArticleEntity a
+//            LEFT JOIN a.category c
+//            WHERE (:status IS NULL OR a.status = :status)
+//                AND (:categoryId IS NULL OR a.category.id = :categoryId)
+//                AND (:search IS NULL OR
+//                    LOWER(a.title) LIKE LOWER(CONCAT('%', :search, '%')) OR
+//                    LOWER(a.description) LIKE LOWER(CONCAT('%', :search, '%')))
+//            ORDER BY
+//                COALESCE(a.publishedAt, a.createdAt) DESC,
+//                a.createdAt DESC
+//            """)
+//    Page<ArticleItemProjection> findArticleItemsForAdmin(
+//            @Param("status") ArticleStatus status,
+//            @Param("categoryId") Integer categoryId,
+//            @Param("search") String search,
+//            Pageable pageable
+//    );
 }
