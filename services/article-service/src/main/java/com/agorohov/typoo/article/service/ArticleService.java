@@ -101,13 +101,12 @@ public class ArticleService {
 
     public Page<ArticleItemResponse> getPublishedArticleItems(
             Integer categoryId,
-            String search,
             @NotNull Pageable pageable
     ) {
-        log.debug("Fetching published article items by category={}, search=[{}], page={}, size={}",
-                categoryId, search, pageable.getPageNumber(), pageable.getPageSize());
-        String notNullSearch = search != null ? search.trim() : "";
-        return articleRepository.findPublishedArticleItems(categoryId, notNullSearch, pageable)
+        log.debug("Fetching published article items by category={}, page={}, size={}",
+                categoryId, pageable.getPageNumber(), pageable.getPageSize());
+
+        return articleRepository.findPublishedArticleItems(categoryId, pageable)
                 .map(ArticleMapper::toArticleItemResponse);
     }
 

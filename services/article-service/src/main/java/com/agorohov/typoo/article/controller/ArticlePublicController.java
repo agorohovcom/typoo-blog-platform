@@ -24,10 +24,9 @@ public class ArticlePublicController {
     @GetMapping
     public ResponseEntity<Page<ArticleItemResponse>> getPublishedArticles(
             @RequestParam(required = false) Integer categoryId,
-            @RequestParam(required = false) String search,
             @PageableDefault(size = 10) Pageable pageable
     ) {
-        var page = articleService.getPublishedArticleItems(categoryId, search, pageable);
+        var page = articleService.getPublishedArticleItems(categoryId, pageable);
         return ResponseEntity.ok(page);
     }
 

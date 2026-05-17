@@ -34,16 +34,12 @@ public interface ArticleRepository extends JpaRepository<ArticleEntity, UUID> {
             WHERE a.status = 'PUBLISHED'
                 AND a.deletedAt IS NULL
                 AND (:categoryId IS NULL OR a.category.id = :categoryId)
-                AND (:search = ''
-                    OR LOWER(a.title) LIKE CONCAT('%', LOWER(:search), '%')
-                    OR LOWER(a.description) LIKE CONCAT('%', LOWER(:search), '%'))
             ORDER BY
                 a.publishedAt DESC,
                 a.createdAt DESC
             """)
     Page<ArticleItemProjection> findPublishedArticleItems(
             @Param("categoryId") Integer categoryId,
-            @Param("search") String search,
             Pageable pageable
     );
 
@@ -59,6 +55,7 @@ public interface ArticleRepository extends JpaRepository<ArticleEntity, UUID> {
 
     // ============================== ADMIN METHODS ====================================
 
+    // fixme медленный поиск, который даже если search == null проверяет каждую запись
     @Query("""
             SELECT
                 a.id AS id,
@@ -75,9 +72,12 @@ public interface ArticleRepository extends JpaRepository<ArticleEntity, UUID> {
             LEFT JOIN a.category c
             WHERE (:status IS NULL OR a.status = :status)
                 AND (:categoryId IS NULL OR a.category.id = :categoryId)
-                AND (:search = ''
-                    OR LOWER(a.title) LIKE CONCAT('%', LOWER(:search), '%')
-                    OR LOWER(a.description) LIKE CONCAT('%', LOWER(:search), '%'))
+                AND (
+                    :search IS NULL
+                    OR LOWER(a.title) LIKE CONCAT('%', LOWER(COALESCE(:search, '')), '%')
+                    OR LOWER(a.description) LIKE CONCAT('%', LOWER(COALESCE(:search, '')), '%')
+                    OR LOWER(a.content) LIKE CONCAT('%', LOWER(COALESCE(:search, '')), '%')
+                )
             ORDER BY
                 COALESCE(a.publishedAt, a.createdAt) DESC,
                 a.createdAt DESC
