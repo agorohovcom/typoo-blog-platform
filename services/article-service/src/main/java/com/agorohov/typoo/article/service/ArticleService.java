@@ -106,7 +106,8 @@ public class ArticleService {
     ) {
         log.debug("Fetching published article items by category={}, search=[{}], page={}, size={}",
                 categoryId, search, pageable.getPageNumber(), pageable.getPageSize());
-        return articleRepository.findPublishedArticleItems(categoryId, search, pageable)
+        String notNullSearch = search != null ? search.trim() : "";
+        return articleRepository.findPublishedArticleItems(categoryId, notNullSearch, pageable)
                 .map(ArticleMapper::toArticleItemResponse);
     }
 
