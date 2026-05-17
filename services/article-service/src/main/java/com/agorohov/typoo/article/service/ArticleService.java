@@ -16,6 +16,7 @@ import com.agorohov.typoo.article.repository.ArticleRepository;
 import com.agorohov.typoo.article.repository.ArticleSeoRepository;
 import com.agorohov.typoo.article.repository.CategoryRepository;
 import com.agorohov.typoo.article.repository.TagRepository;
+import com.agorohov.typoo.article.type.ArticleStatus;
 import jakarta.validation.Valid;
 import jakarta.validation.constraints.NotNull;
 import lombok.RequiredArgsConstructor;
@@ -107,6 +108,20 @@ public class ArticleService {
                 categoryId, pageable.getPageNumber(), pageable.getPageSize());
 
         return articleRepository.findPublishedArticleItems(categoryId, pageable)
+                .map(ArticleMapper::toArticleItemResponse);
+    }
+
+    public Page<ArticleItemResponse> getArticleItemsForAdmin(
+            ArticleStatus status,
+            Integer categoryId,
+            String search,
+            @NotNull Pageable pageable
+    ) {
+        log.debug("Fetching article items by status={}, category={}, search=[{}], page={}, size={}",
+                status, categoryId, search, pageable.getPageNumber(), pageable.getPageSize());
+
+        String notNullSearch = search == null ? "" : search.trim();
+        return articleRepository.findArticleItemsForAdmin(status, categoryId, notNullSearch, pageable)
                 .map(ArticleMapper::toArticleItemResponse);
     }
 

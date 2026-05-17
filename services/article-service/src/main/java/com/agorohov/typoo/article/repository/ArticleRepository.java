@@ -73,10 +73,10 @@ public interface ArticleRepository extends JpaRepository<ArticleEntity, UUID> {
             WHERE (:status IS NULL OR a.status = :status)
                 AND (:categoryId IS NULL OR a.category.id = :categoryId)
                 AND (
-                    :search IS NULL
-                    OR LOWER(a.title) LIKE CONCAT('%', LOWER(COALESCE(:search, '')), '%')
-                    OR LOWER(a.description) LIKE CONCAT('%', LOWER(COALESCE(:search, '')), '%')
-                    OR LOWER(a.content) LIKE CONCAT('%', LOWER(COALESCE(:search, '')), '%')
+                    :search = ''
+                        OR LOWER(a.title) LIKE CONCAT('%', LOWER(:search), '%')
+                        OR LOWER(a.description) LIKE CONCAT('%', LOWER(:search), '%')
+                        OR LOWER(a.content) LIKE CONCAT('%', LOWER(:search), '%')
                 )
             ORDER BY
                 COALESCE(a.publishedAt, a.createdAt) DESC,

@@ -16,13 +16,13 @@ import org.springframework.web.bind.annotation.RestController;
 
 @RestController
 @RequiredArgsConstructor
-@RequestMapping("/v1")
+@RequestMapping("/v1/public")
 public class ArticlePublicController {
 
     private final ArticleService articleService;
 
     @GetMapping
-    public ResponseEntity<Page<ArticleItemResponse>> getPublishedArticles(
+    public ResponseEntity<Page<ArticleItemResponse>> getPublishedArticleItems(
             @RequestParam(required = false) Integer categoryId,
             @PageableDefault(size = 10) Pageable pageable
     ) {
