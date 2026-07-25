@@ -1,13 +1,16 @@
 package com.agorohov.typoo.article.filter;
 
 import com.agorohov.shared.utils.logging.HttpLogHelper;
+import com.agorohov.shared.utils.logging.HttpLogProperties;
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
+import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.core.annotation.Order;
 import org.springframework.stereotype.Component;
+import org.springframework.util.AntPathMatcher;
 import org.springframework.web.filter.OncePerRequestFilter;
 import org.springframework.web.util.ContentCachingRequestWrapper;
 import org.springframework.web.util.ContentCachingResponseWrapper;
@@ -22,6 +25,7 @@ import java.util.stream.Collectors;
 @Slf4j
 @Component
 @Order(1)
+@RequiredArgsConstructor
 public class RequestLoggingFilter extends OncePerRequestFilter {
 
     private static final int CONTENT_CACHE_LIMIT = 1024 * 64;   // 64 Kb
@@ -30,6 +34,9 @@ public class RequestLoggingFilter extends OncePerRequestFilter {
             "/health",
             "/prometheus"
     );
+
+    private final HttpLogProperties loggingProperties;
+    private final AntPathMatcher pathMatcher = new AntPathMatcher();
 
     @SuppressWarnings("NullableProblems")
     @Override
@@ -46,13 +53,25 @@ public class RequestLoggingFilter extends OncePerRequestFilter {
         try {
             filterChain.doFilter(wrappedRequest, wrappedResponse);
         } finally {
-            logRequest(wrappedRequest);
-            logResponse(wrappedResponse, startTime);
+            boolean includeBody = !isBodyLoggingExcluded(request.getRequestURI());
+            logRequest(wrappedRequest, includeBody);
+            logResponse(wrappedResponse, startTime, includeBody);
             wrappedResponse.copyBodyToResponse();
         }
     }
 
-    private void logRequest(ContentCachingRequestWrapper request) {
+    @Override
+    protected boolean shouldNotFilter(HttpServletRequest request) {
+        String path = request.getRequestURI();
+        return SHOULD_NOT_FILTER.stream().anyMatch(path::startsWith)
+                || loggingProperties.getExcludePaths().stream().anyMatch(p -> pathMatcher.match(p, path));
+    }
+
+    private boolean isBodyLoggingExcluded(String uri) {
+        return loggingProperties.getExcludeBodyPaths().stream().anyMatch(p -> pathMatcher.match(p, uri));
+    }
+
+    private void logRequest(ContentCachingRequestWrapper request, boolean includeBody) {
         String method = request.getMethod();
         String uri = request.getRequestURI();
         String query = request.getQueryString();
@@ -72,13 +91,15 @@ public class RequestLoggingFilter extends OncePerRequestFilter {
                 query,
                 headers,
                 bodyBytes,
-                contentType
+                contentType,
+                includeBody,
+                loggingProperties.getMaxBodySize()
         );
 
         log.info(logMessage);
     }
 
-    private void logResponse(ContentCachingResponseWrapper response, long startTime) {
+    private void logResponse(ContentCachingResponseWrapper response, long startTime, boolean includeBody) {
         long duration = System.currentTimeMillis() - startTime;
 
         byte[] bodyBytes = response.getContentAsByteArray();
@@ -89,15 +110,11 @@ public class RequestLoggingFilter extends OncePerRequestFilter {
                 status,
                 duration,
                 bodyBytes,
-                contentType
+                contentType,
+                includeBody,
+                loggingProperties.getMaxBodySize()
         );
 
         log.info(logMessage);
-    }
-
-    @Override
-    protected boolean shouldNotFilter(HttpServletRequest request) {
-        String path = request.getRequestURI();
-        return SHOULD_NOT_FILTER.stream().anyMatch(path::startsWith);
     }
 }

@@ -11,10 +11,10 @@ public final class HttpLogHelper {
     private HttpLogHelper() {
     }
 
-    private static final int MAX_PAYLOAD_LENGTH = 8192;
     private static final String MASKED_MESSAGE = "[MASKED]";
     private static final String EMPTY_BODY_MESSAGE = "[empty body]";
     private static final String CONTENT_SKIPPED_MESSAGE = "[non-text content skipped]";
+    private static final String BODY_REDACTED_MESSAGE = "[body redacted by path rule]";
     private static final String TRUNCATED = " [truncated]";
     private static final Set<String> MASKED_HEADER_NAMES = Set.of(
             "Authorization",
@@ -36,7 +36,9 @@ public final class HttpLogHelper {
             String queryString,
             Map<String, List<String>> originalHeaders,
             byte[] bodyBytes,
-            String contentType
+            String contentType,
+            boolean includeBody,
+            int maxBodySize
     ) {
         String query = queryString != null ? "?" + queryString : "";
 
@@ -46,9 +48,7 @@ public final class HttpLogHelper {
                 .map(e -> e.getKey() + ": " + e.getValue())
                 .collect(Collectors.joining(", "));
 
-        String bodyPreview = previewBody(bodyBytes);
-
-        String displayBody = buildDisplayBody(contentType, bodyPreview);
+        String displayBody = buildDisplayBody(bodyBytes, contentType, includeBody, maxBodySize);
 
         return """
                 -> Request
@@ -69,11 +69,11 @@ public final class HttpLogHelper {
             int status,
             long durationMs,
             byte[] responseBodyBytes,
-            String contentType
+            String contentType,
+            boolean includeBody,
+            int maxBodySize
     ) {
-        String bodyPreview = previewBody(responseBodyBytes);
-
-        String displayBody = buildDisplayBody(contentType, bodyPreview);
+        String displayBody = buildDisplayBody(responseBodyBytes, contentType, includeBody, maxBodySize);
 
         return """
                 <- Response
@@ -100,24 +100,30 @@ public final class HttpLogHelper {
         return masked;
     }
 
-    private static String previewBody(byte[] bytes) {
-        if (bytes == null || bytes.length == 0) {
-            return "";
+    private static String buildDisplayBody(byte[] bytes, String contentType, boolean includeBody, int maxBodySize) {
+        if (!includeBody) {
+            return BODY_REDACTED_MESSAGE;
         }
-        int len = Math.min(bytes.length, MAX_PAYLOAD_LENGTH);
-        String text = new String(bytes, 0, len, StandardCharsets.UTF_8);
-        return bytes.length > MAX_PAYLOAD_LENGTH
-                ? text + TRUNCATED
-                : text;
-    }
 
-    private static String buildDisplayBody(String contentType, String bodyPreview) {
+        if (bytes == null || bytes.length == 0) {
+            return EMPTY_BODY_MESSAGE;
+        }
+
         boolean isLoggableBody = contentType != null
                 && CONTENT_TYPES.stream().anyMatch(contentType.trim()::equalsIgnoreCase);
-        return bodyPreview.isEmpty()
-                ? EMPTY_BODY_MESSAGE
-                : isLoggableBody
-                ? bodyPreview
-                : CONTENT_SKIPPED_MESSAGE;
+
+        if (!isLoggableBody) {
+            return CONTENT_SKIPPED_MESSAGE + " (" + contentType + ")";
+        }
+
+        return previewBody(bytes, maxBodySize);
+    }
+
+    private static String previewBody(byte[] bytes, int maxBodySize) {
+        int len = Math.min(bytes.length, maxBodySize);
+        String text = new String(bytes, 0, len, StandardCharsets.UTF_8);
+        return bytes.length > maxBodySize
+                ? text + TRUNCATED
+                : text;
     }
 }
