@@ -1,7 +1,5 @@
-package com.agorohov.typoo.article.filter;
+package com.agorohov.shared.utils.logging;
 
-import com.agorohov.shared.utils.logging.HttpLogHelper;
-import com.agorohov.shared.utils.logging.HttpLogProperties;
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
@@ -9,7 +7,6 @@ import jakarta.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.core.annotation.Order;
-import org.springframework.stereotype.Component;
 import org.springframework.util.AntPathMatcher;
 import org.springframework.web.filter.OncePerRequestFilter;
 import org.springframework.web.util.ContentCachingRequestWrapper;
@@ -23,10 +20,9 @@ import java.util.Set;
 import java.util.stream.Collectors;
 
 @Slf4j
-@Component
 @Order(1)
 @RequiredArgsConstructor
-public class RequestLoggingFilter extends OncePerRequestFilter {
+public class RequestLogFilter extends OncePerRequestFilter {
 
     private static final int CONTENT_CACHE_LIMIT = 1024 * 64;   // 64 Kb
     private static final Set<String> SHOULD_NOT_FILTER = Set.of(

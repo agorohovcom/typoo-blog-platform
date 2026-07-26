@@ -12,6 +12,12 @@ import java.util.Set;
 public class HttpLogProperties {
 
     /**
+     * Включить HTTP-логирование. По умолчанию — false.
+     * Чтобы включить, задай в конфиге сервиса: logging.http-helper.enabled=true
+     */
+    private boolean enabled = false;
+
+    /**
      * Пути (Ant-style), для которых тело запроса/ответа не логируется вообще.
      * Пример: /v1/admin/**, /actuator/**
      */
