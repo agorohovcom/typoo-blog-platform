@@ -1,8 +1,8 @@
 package com.agorohov.typoo.article.event;
 
 import com.agorohov.typoo.article.service.ArticleRevisionService;
+import lombok.CustomLog;
 import lombok.RequiredArgsConstructor;
-import lombok.extern.slf4j.Slf4j;
 import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Component;
 import org.springframework.transaction.event.TransactionPhase;
@@ -12,7 +12,7 @@ import java.util.UUID;
 
 @Component
 @RequiredArgsConstructor
-@Slf4j
+@CustomLog
 public class ArticleEventListener {
 
     private final ArticleRevisionService articleRevisionService;

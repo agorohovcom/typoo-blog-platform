@@ -15,6 +15,11 @@ import org.springframework.context.annotation.Bean;
 public class HttpLogConfig {
 
     @Bean
+    public RequestTraceIdFilter requestTraceIdFilter() {
+        return new RequestTraceIdFilter();
+    }
+
+    @Bean
     @ConditionalOnProperty(prefix = "logging.http-helper", name = "enabled", havingValue = "true")
     public RequestLogFilter requestLogFilter(HttpLogProperties logProperties) {
         return new RequestLogFilter(logProperties);

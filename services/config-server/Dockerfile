@@ -4,6 +4,7 @@ WORKDIR /app
 
 # Кешируем зависимости
 COPY build.gradle.kts settings.gradle.kts gradle.properties ./
+COPY lombok.config ./
 COPY gradle gradle
 RUN gradle dependencies --no-daemon || return 0
 

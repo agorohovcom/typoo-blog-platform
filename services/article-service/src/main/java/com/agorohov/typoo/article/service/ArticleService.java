@@ -19,8 +19,8 @@ import com.agorohov.typoo.article.repository.TagRepository;
 import com.agorohov.typoo.article.type.ArticleStatus;
 import jakarta.validation.Valid;
 import jakarta.validation.constraints.NotNull;
+import lombok.CustomLog;
 import lombok.RequiredArgsConstructor;
-import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
@@ -34,7 +34,7 @@ import java.util.UUID;
 
 @Service
 @RequiredArgsConstructor
-@Slf4j
+@CustomLog
 @Validated
 public class ArticleService {
 

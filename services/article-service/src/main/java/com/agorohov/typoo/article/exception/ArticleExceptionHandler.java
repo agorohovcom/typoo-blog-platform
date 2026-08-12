@@ -2,7 +2,7 @@ package com.agorohov.typoo.article.exception;
 
 import com.agorohov.shared.common.exception.ErrorCode;
 import com.agorohov.shared.common.exception.TypooException;
-import lombok.extern.slf4j.Slf4j;
+import lombok.CustomLog;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.ControllerAdvice;
 import org.springframework.web.bind.annotation.ExceptionHandler;
@@ -14,7 +14,7 @@ import java.util.Map;
 import static com.agorohov.typoo.article.exception.ArticleErrorCode.UNEXPECTED_INTERNAL_ERROR;
 
 @ControllerAdvice
-@Slf4j
+@CustomLog
 public class ArticleExceptionHandler extends ResponseEntityExceptionHandler {
 
     @ExceptionHandler(Exception.class)
