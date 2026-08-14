@@ -18,6 +18,7 @@ import com.agorohov.typoo.article.repository.CategoryRepository;
 import com.agorohov.typoo.article.repository.TagRepository;
 import com.agorohov.typoo.article.type.ArticleStatus;
 import jakarta.validation.Valid;
+import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
 import lombok.CustomLog;
 import lombok.RequiredArgsConstructor;
@@ -28,6 +29,7 @@ import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.CollectionUtils;
 import org.springframework.validation.annotation.Validated;
 
+import java.time.Instant;
 import java.util.HashSet;
 import java.util.Set;
 import java.util.UUID;
@@ -49,7 +51,11 @@ public class ArticleService {
 
     @Transactional
     public UUID createArticle(@NotNull @Valid CreateArticleRequest request) {
-        log.debug("Creating article draft with title [{}]", request.getTitle());
+        log.debug(() -> "Creating article draft with title [{}]", request.getTitle());
+
+        if (articleRepository.existsBySlug(request.getSlug())) {
+            throw new TypooException(ArticleErrorCode.SLUG_ALREADY_EXISTS);
+        }
 
         CategoryEntity category = null;
         if (request.getCategoryId() != null) {
@@ -96,8 +102,32 @@ public class ArticleService {
         return null;
     }
 
-    public void deleteArticle(UUID id) {
+    @Transactional
+    public void archiveArticle(@NotNull UUID id) {
+        log.debug(() -> "Archiving article with id {}", id);
 
+        ArticleEntity article = articleRepository.findById(id)
+                .orElseThrow(() -> new TypooException(ArticleErrorCode.ARTICLE_NOT_FOUND));
+
+        article.setDeletedAt(Instant.now());
+        article.setStatus(ArticleStatus.ARCHIVED);
+        articleRepository.save(article);
+
+        log.info("Article with id {} archived successfully", id);
+    }
+
+    @Transactional
+    public void restoreArticle(@NotNull UUID id) {
+        ArticleEntity article = articleRepository.findById(id)
+                .orElseThrow(() -> new TypooException(ArticleErrorCode.ARTICLE_NOT_FOUND));
+
+        if (!article.getStatus().equals(ArticleStatus.ARCHIVED)) {
+            throw new TypooException(ArticleErrorCode.ARTICLE_NOT_ARCHIVED);
+        }
+
+        article.setDeletedAt(null);
+        article.setStatus(ArticleStatus.DRAFT);
+        articleRepository.save(article);
     }
 
     public Page<ArticleItemResponse> getPublishedArticleItems(
@@ -125,7 +155,12 @@ public class ArticleService {
                 .map(ArticleMapper::toArticleItemResponse);
     }
 
-    public ArticleResponse getBySlug(String slug) {
-        return null;
+    public ArticleResponse getBySlug(@NotBlank String slug) {
+        log.debug(() -> "Fetching article by slug: {}", slug);
+
+        ArticleEntity article = articleRepository.findFullBySlug(slug)
+                .orElseThrow(() -> new TypooException(ArticleErrorCode.ARTICLE_NOT_FOUND));
+
+        return ArticleMapper.toArticleResponse(article);
     }
 }

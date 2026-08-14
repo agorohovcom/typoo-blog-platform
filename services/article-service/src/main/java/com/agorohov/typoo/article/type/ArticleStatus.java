@@ -6,6 +6,5 @@ import lombok.Getter;
 public enum ArticleStatus {
     DRAFT,
     PUBLISHED,
-    ARCHIVED,
-    DELETED
+    ARCHIVED
 }

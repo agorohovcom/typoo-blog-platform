@@ -7,9 +7,11 @@ import com.agorohov.typoo.article.event.ArticleRevisionCreatedEvent;
 import com.agorohov.typoo.article.repository.ArticleRevisionRepository;
 import lombok.CustomLog;
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.Limit;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
 
@@ -50,9 +52,32 @@ public class ArticleRevisionService {
         return articleRevisionRepository.getCountRevisionsByArticleId(articleId);
     }
 
+    // Вариант 1: через один нативный запрос
     @Transactional
     public int deleteOldestRevisions(UUID articleId, int toDelete) {
         return articleRevisionRepository.deleteOldestRevisions(articleId, toDelete);
+    }
+
+    // Вариант 2: через 2 запроса без нативного
+    @Transactional
+    public int deleteOldestRevisionsV2(UUID articleId, int toDelete) {
+        if (toDelete <= 0) {
+            return 0;
+        }
+
+        // Шаг 1: Получаем список UUID самых старых ревизий (размером не более toDelete)
+        List<UUID> idsToDelete = articleRevisionRepository.findOldestRevisionIds(
+                articleId,
+                Limit.of(toDelete)
+        );
+
+        // Если удалять нечего, сразу выходим
+        if (idsToDelete.isEmpty()) {
+            return 0;
+        }
+
+        // Шаг 2: Удаляем записи по зафиксированным ID одним запросом
+        return articleRevisionRepository.deleteByIds(idsToDelete);
     }
 
     private Optional<Integer> findLastRevisionNumberForArticle(UUID articleId) {

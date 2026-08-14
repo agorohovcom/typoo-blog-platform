@@ -17,6 +17,8 @@ import java.util.UUID;
 @Repository
 public interface ArticleRepository extends JpaRepository<ArticleEntity, UUID> {
 
+    boolean existsBySlug(String slug);
+
     @Query("""
             SELECT
                 a.id AS id,
@@ -43,14 +45,14 @@ public interface ArticleRepository extends JpaRepository<ArticleEntity, UUID> {
             Pageable pageable
     );
 
-    // todo для публичных ручек выдавать только в статусе PUBLISHED
+    // todo подумать над неймингом
     @EntityGraph(attributePaths = {"category", "tags", "seo"})
-    @Query("SELECT a FROM ArticleEntity a WHERE a.slug = :slug AND a.deletedAt IS NULL")
+    @Query("SELECT a FROM ArticleEntity a WHERE a.slug = :slug AND a.deletedAt IS NULL AND a.status = 'PUBLISHED'")
     Optional<ArticleEntity> findFullBySlug(@Param("slug") String slug);
 
-    // todo для публичных ручек выдавать только в статусе PUBLISHED
+    // todo подумать над неймингом
     @EntityGraph(attributePaths = {"category", "tags", "seo"})
-    @Query("SELECT a FROM ArticleEntity a WHERE a.id = :id AND a.deletedAt IS NULL")
+    @Query("SELECT a FROM ArticleEntity a WHERE a.id = :id AND a.deletedAt IS NULL AND a.status = 'PUBLISHED'")
     Optional<ArticleEntity> findFullById(@Param("id") UUID id);
 
     // ============================== ADMIN METHODS ====================================

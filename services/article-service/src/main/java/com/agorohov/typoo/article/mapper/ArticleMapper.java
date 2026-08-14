@@ -29,6 +29,7 @@ public class ArticleMapper {
                 .isPinned(entity.getIsPinned())
                 .createdAt(entity.getCreatedAt())
                 .updatedAt(entity.getUpdatedAt())
+                .publishedAt(entity.getPublishedAt())
                 .build();
     }
 

@@ -29,7 +29,7 @@ import java.util.UUID;
 @RestController
 @RequiredArgsConstructor
 @Validated
-@RequestMapping("/v1/admin")
+@RequestMapping("/admin")
 public class ArticleAdminController {
 
     private final ArticleService articleService;
@@ -60,7 +60,13 @@ public class ArticleAdminController {
 
     @DeleteMapping("/{id}")
     public ResponseEntity<Void> delete(@PathVariable UUID id) {
-        articleService.deleteArticle(id);
+        articleService.archiveArticle(id);
+        return ResponseEntity.noContent().build();
+    }
+
+    @PostMapping("/{id}/restore")
+    public ResponseEntity<Void> restore(@PathVariable UUID id) {
+        articleService.restoreArticle(id);
         return ResponseEntity.noContent().build();
     }
 
