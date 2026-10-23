@@ -17,6 +17,9 @@ import static com.agorohov.typoo.article.exception.ArticleErrorCode.UNEXPECTED_I
 @CustomLog
 public class ArticleExceptionHandler extends ResponseEntityExceptionHandler {
 
+    // TODO Кажется, надо привести ошибки к одному виду
+    //  + пробрасывать трейс айди в тело ошибки
+
     @ExceptionHandler(Exception.class)
     public ResponseEntity<Object> handleUnexpectedException(Exception ex) {
         log.error("Unexpected error occurred, type: {}, message: {}", ex.getClass().getSimpleName(), ex.getMessage());

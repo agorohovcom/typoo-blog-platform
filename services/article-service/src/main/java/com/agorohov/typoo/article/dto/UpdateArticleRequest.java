@@ -25,7 +25,7 @@ public class UpdateArticleRequest {
     String coverImageAlt;
 
     Integer categoryId;
-    Set<UUID> tagIds;
+    Set<Integer> tagIds;
 
     Boolean allowComments;
     Boolean featured;

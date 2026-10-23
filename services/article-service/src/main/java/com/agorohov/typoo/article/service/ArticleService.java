@@ -1,5 +1,6 @@
 package com.agorohov.typoo.article.service;
 
+import com.agorohov.shared.common.event.TypooEventPublisher;
 import com.agorohov.shared.common.exception.TypooException;
 import com.agorohov.typoo.article.dto.ArticleItemResponse;
 import com.agorohov.typoo.article.dto.ArticleResponse;
@@ -7,12 +8,15 @@ import com.agorohov.typoo.article.dto.ArticleStatusRequest;
 import com.agorohov.typoo.article.dto.CreateArticleRequest;
 import com.agorohov.typoo.article.dto.UpdateArticleRequest;
 import com.agorohov.typoo.article.entity.ArticleEntity;
+import com.agorohov.typoo.article.entity.ArticleRevisionEntity;
 import com.agorohov.typoo.article.entity.ArticleSeoEntity;
 import com.agorohov.typoo.article.entity.CategoryEntity;
 import com.agorohov.typoo.article.entity.TagEntity;
+import com.agorohov.typoo.article.event.ArticleRevisionCreatedEvent;
 import com.agorohov.typoo.article.exception.ArticleErrorCode;
 import com.agorohov.typoo.article.mapper.ArticleMapper;
 import com.agorohov.typoo.article.repository.ArticleRepository;
+import com.agorohov.typoo.article.repository.ArticleRevisionRepository;
 import com.agorohov.typoo.article.repository.ArticleSeoRepository;
 import com.agorohov.typoo.article.repository.CategoryRepository;
 import com.agorohov.typoo.article.repository.TagRepository;
@@ -22,6 +26,7 @@ import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
 import lombok.CustomLog;
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.Limit;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
@@ -31,6 +36,7 @@ import org.springframework.validation.annotation.Validated;
 
 import java.time.Instant;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Set;
 import java.util.UUID;
 
@@ -40,14 +46,16 @@ import java.util.UUID;
 @Validated
 public class ArticleService {
 
-    private final ArticleRevisionService articleRevisionService;
     private final ArticleRepository articleRepository;
     private final CategoryRepository categoryRepository;
     private final TagRepository tagRepository;
     private final ArticleSeoRepository articleSeoRepository;
+    private final ArticleRevisionRepository articleRevisionRepository;
+    private final TypooEventPublisher eventPublisher;
 
     // todo вынести в конфиг класс
     private static final String CREATE_DRAFT_REVISION_COMMENT = "AUTO: First article draft created";
+    private static final int REVISION_MAX_COUNT = 10;
 
     @Transactional
     public UUID createArticle(@NotNull @Valid CreateArticleRequest request) {
@@ -77,7 +85,7 @@ public class ArticleService {
         newArticle.setTags(tags);
         articleRepository.save(newArticle);
 
-        articleRevisionService.saveArticleRevision(newArticle, CREATE_DRAFT_REVISION_COMMENT);
+        createArticleRevision(newArticle, CREATE_DRAFT_REVISION_COMMENT);
 
         if (request.getMetaTitle() != null
                 || request.getMetaDescription() != null
@@ -94,11 +102,38 @@ public class ArticleService {
         return newArticle.getId();
     }
 
+    private void createArticleRevision(ArticleEntity articleEntity, String revisionComment) {
+        log.debug(() -> "Creating article revision for article id {} with revision comment [{}]",
+                articleEntity.getId(), revisionComment);
+
+        int revisionNumber = articleRevisionRepository
+                .findLastRevisionNumberForArticle(articleEntity.getId())
+                .orElse(0) + 1; // fixme findLastRevisionNumberForArticle
+
+        ArticleRevisionEntity entity = new ArticleRevisionEntity();
+        entity.setArticle(articleEntity);
+        entity.setTitle(articleEntity.getTitle());
+        entity.setSlug(articleEntity.getSlug());
+        entity.setDescription(articleEntity.getDescription());
+        entity.setContent(articleEntity.getContent());
+        entity.setCoverImageId(articleEntity.getCoverImageId());
+        entity.setCoverImageAlt(articleEntity.getCoverImageAlt());
+        entity.setRevisionComment(revisionComment);
+        entity.setRevisionNumber(revisionNumber);
+
+        articleRevisionRepository.save(entity);
+        log.info("Article revision number {} saved for article id {}", revisionNumber, articleEntity.getId());
+
+        eventPublisher.publish(new ArticleRevisionCreatedEvent(articleEntity.getId()));
+    }
+
     public ArticleResponse updateArticle(UUID id, UpdateArticleRequest request) {
         return null;
     }
 
     public ArticleResponse changeStatus(UUID id, ArticleStatusRequest request) {
+        // todo При переходе в PUBLISHED нужно проставлять publishedAt
+        //  При переходе из PUBLISHED в DRAFT — либо обнулять, либо оставлять (это продуктовое решение, нужно его зафиксировать).
         return null;
     }
 
@@ -162,5 +197,24 @@ public class ArticleService {
                 .orElseThrow(() -> new TypooException(ArticleErrorCode.ARTICLE_NOT_FOUND));
 
         return ArticleMapper.toArticleResponse(article);
+    }
+
+    // ============================== Revision ===================================
+
+    @Transactional
+    public void cleanupOldestRevisions(UUID articleId) {
+        int count = articleRevisionRepository.getCountRevisionsByArticleId(articleId);
+        int toDelete = count - REVISION_MAX_COUNT;
+        if (toDelete <= 0) {
+            return;
+        }
+
+        List<UUID> ids = articleRevisionRepository.findOldestRevisionIds(articleId, Limit.of(toDelete));
+        if (ids.isEmpty()) {
+            return;
+        }
+
+        int deleted = articleRevisionRepository.deleteByIds(ids);
+        log.info("Deleted {} old revisions for article {}", deleted, articleId);
     }
 }

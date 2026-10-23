@@ -1,6 +1,6 @@
 package com.agorohov.typoo.article.event;
 
-import com.agorohov.typoo.article.service.ArticleRevisionService;
+import com.agorohov.typoo.article.service.ArticleService;
 import lombok.CustomLog;
 import lombok.RequiredArgsConstructor;
 import org.springframework.scheduling.annotation.Async;
@@ -15,10 +15,7 @@ import java.util.UUID;
 @CustomLog
 public class ArticleEventListener {
 
-    private final ArticleRevisionService articleRevisionService;
-
-    // todo вынести в конфиг класс
-    private static final int REVISION_MAX_COUNT = 10;
+    private final ArticleService articleService;
 
     @Async
     @TransactionalEventListener(phase = TransactionPhase.AFTER_COMMIT)
@@ -26,11 +23,6 @@ public class ArticleEventListener {
         log.debug("Handling event: {}", event.getEventType().getCode());
 
         UUID articleId = UUID.fromString(event.getSubjectId());
-        int countOfRevisions = articleRevisionService.getCountRevisionsByArticleId(articleId);
-        int toDelete = countOfRevisions - REVISION_MAX_COUNT;
-        if (toDelete > 0) {
-            int deleted = articleRevisionService.deleteOldestRevisions(articleId, toDelete);
-            log.info("Deleted {} old revisions for article {}", deleted, articleId);
-        }
+        articleService.cleanupOldestRevisions(articleId);
     }
 }

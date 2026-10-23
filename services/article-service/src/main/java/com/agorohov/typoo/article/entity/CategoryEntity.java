@@ -21,7 +21,7 @@ import lombok.ToString;
 @Setter
 @NoArgsConstructor
 @AllArgsConstructor
-@ToString
+@ToString(exclude = "parent")
 @EqualsAndHashCode(of = "id")
 public class CategoryEntity {
 
