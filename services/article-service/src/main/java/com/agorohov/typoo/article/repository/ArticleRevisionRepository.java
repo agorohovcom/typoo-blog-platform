@@ -15,6 +15,7 @@ import java.util.UUID;
 @Repository
 public interface ArticleRevisionRepository extends JpaRepository<ArticleRevisionEntity, UUID> {
 
+    // todo удалить? теперь номер ревизии в версии статьи
     @Query("""
             SELECT MAX(ar.revisionNumber)
             FROM ArticleRevisionEntity ar

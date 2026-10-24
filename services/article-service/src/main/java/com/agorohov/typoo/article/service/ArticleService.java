@@ -29,6 +29,10 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Limit;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
+import org.springframework.orm.ObjectOptimisticLockingFailureException;
+import org.springframework.retry.annotation.Backoff;
+import org.springframework.retry.annotation.Recover;
+import org.springframework.retry.annotation.Retryable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.CollectionUtils;
@@ -106,9 +110,7 @@ public class ArticleService {
         log.debug(() -> "Creating article revision for article id {} with revision comment [{}]",
                 articleEntity.getId(), revisionComment);
 
-        int revisionNumber = articleRevisionRepository
-                .findLastRevisionNumberForArticle(articleEntity.getId())
-                .orElse(0) + 1; // fixme findLastRevisionNumberForArticle
+        long revisionNumber = articleEntity.getVersion() + 1;
 
         ArticleRevisionEntity entity = new ArticleRevisionEntity();
         entity.setArticle(articleEntity);
@@ -127,10 +129,49 @@ public class ArticleService {
         eventPublisher.publish(new ArticleRevisionCreatedEvent(articleEntity.getId()));
     }
 
-    public ArticleResponse updateArticle(UUID id, UpdateArticleRequest request) {
-        return null;
+    @Retryable(
+            retryFor = ObjectOptimisticLockingFailureException.class,
+            recover = "recoverUpdateArticle",
+            maxAttempts = 3,
+            backoff = @Backoff(delay = 50, multiplier = 2)
+    )
+    @Transactional
+    public ArticleResponse updateArticle(@NotNull UUID id, @NotNull @Valid UpdateArticleRequest request) {
+        log.debug(() -> "Updating article draft with id={}", id);
+
+        ArticleEntity article = articleRepository.findById(id)
+                .orElseThrow(() -> new TypooException(ArticleErrorCode.ARTICLE_NOT_FOUND));
+
+        if (request.getSlug() != null && !request.getSlug().equals(article.getSlug())
+                && articleRepository.existsBySlug(request.getSlug())) {
+            throw new TypooException(ArticleErrorCode.SLUG_ALREADY_EXISTS);
+        }
+
+        ArticleMapper.updateArticleEntity(request, article);
+
+        article.setUpdatedAt(Instant.now());
+
+        // saveAndFlush гарантирует, что OptLockException бросится внутри метода (до createArticleRevision),
+        // и что article.getVersion() в createArticleRevision уже новый - revisionNumber посчитается правильно.
+        articleRepository.saveAndFlush(article);
+
+        // fixme сейчас ревизия создается даже если ничего не поменялось
+        createArticleRevision(article, request.getRevisionComment());
+
+        return ArticleMapper.toArticleResponse(article);
     }
 
+    @Recover
+    public ArticleResponse recoverUpdateArticle(
+            ObjectOptimisticLockingFailureException ex,
+            UUID id,
+            UpdateArticleRequest request
+    ) {
+        log.warn("Optimistic lock conflict on updating article {}", id);
+        throw new TypooException(ArticleErrorCode.ARTICLE_CONCURRENTLY_MODIFIED);
+    }
+
+    // todo тоже нужен
     public ArticleResponse changeStatus(UUID id, ArticleStatusRequest request) {
         // todo При переходе в PUBLISHED нужно проставлять publishedAt
         //  При переходе из PUBLISHED в DRAFT — либо обнулять, либо оставлять (это продуктовое решение, нужно его зафиксировать).
@@ -199,7 +240,7 @@ public class ArticleService {
         return ArticleMapper.toArticleResponse(article);
     }
 
-    // ============================== Revision ===================================
+// ============================== Revision ===================================
 
     @Transactional
     public void cleanupOldestRevisions(UUID articleId) {

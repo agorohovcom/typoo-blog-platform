@@ -59,7 +59,7 @@ public class ArticleRevisionEntity {
     private String revisionComment;
 
     @Column(name = "revision_number", nullable = false, updatable = false)
-    private Integer revisionNumber;             // todo при переходе на миграции сделать уник(артикль, номерРевизии)
+    private Long revisionNumber;             // todo при переходе на миграции сделать уник(артикль, номерРевизии)
 
     @Column(name = "created_at", updatable = false)
     private Instant createdAt = Instant.now();

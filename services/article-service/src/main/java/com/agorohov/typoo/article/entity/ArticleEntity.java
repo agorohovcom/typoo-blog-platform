@@ -16,6 +16,7 @@ import jakarta.persistence.ManyToMany;
 import jakarta.persistence.ManyToOne;
 import jakarta.persistence.OneToOne;
 import jakarta.persistence.Table;
+import jakarta.persistence.Version;
 import lombok.AllArgsConstructor;
 import lombok.EqualsAndHashCode;
 import lombok.Getter;
@@ -103,4 +104,9 @@ public class ArticleEntity {
 
     @Column(name = "is_pinned", nullable = false)
     private Boolean isPinned = false;
+
+    // Optimistic lock
+    @Version
+    @Column(name = "version", nullable = false)
+    private Long version;
 }

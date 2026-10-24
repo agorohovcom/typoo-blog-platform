@@ -9,7 +9,8 @@ public enum ArticleErrorCode implements ErrorCode {
     ARTICLE_NOT_FOUND("ARTICLE_NOT_FOUND", "Article not found", HttpStatus.NOT_FOUND.value()),
     ARTICLE_NOT_ARCHIVED("ARTICLE_NOT_ARCHIVED", "Article is not archived", HttpStatus.BAD_REQUEST.value()),
     SLUG_ALREADY_EXISTS("SLUG_ALREADY_EXISTS", "Article with the some slug already exists", HttpStatus.CONFLICT.value()),
-    CATEGORY_NOT_FOUND("CATEGORY_NOT_FOUND", "Category not found", HttpStatus.NOT_FOUND.value());
+    CATEGORY_NOT_FOUND("CATEGORY_NOT_FOUND", "Category not found", HttpStatus.NOT_FOUND.value()),
+    ARTICLE_CONCURRENTLY_MODIFIED("ARTICLE_CONCURRENTLY_MODIFIED", "Article concurrently modified", HttpStatus.CONFLICT.value());
 
     private final String code;
     private final String message;

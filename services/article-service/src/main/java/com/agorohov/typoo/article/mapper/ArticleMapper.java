@@ -2,6 +2,7 @@ package com.agorohov.typoo.article.mapper;
 
 import com.agorohov.typoo.article.dto.ArticleItemResponse;
 import com.agorohov.typoo.article.dto.ArticleResponse;
+import com.agorohov.typoo.article.dto.UpdateArticleRequest;
 import com.agorohov.typoo.article.entity.ArticleEntity;
 import com.agorohov.typoo.article.entity.TagEntity;
 import com.agorohov.typoo.article.repository.projection.ArticleItemProjection;
@@ -9,6 +10,7 @@ import com.agorohov.typoo.article.repository.projection.ArticleItemProjection;
 import java.util.Objects;
 import java.util.stream.Collectors;
 
+// TODO MapStruct не используется
 public class ArticleMapper {
 
     public static ArticleResponse toArticleResponse(ArticleEntity entity) {
@@ -46,5 +48,26 @@ public class ArticleMapper {
                 .categoryId(projection.getCategoryId())
                 .categoryName(projection.getCategoryName())
                 .build();
+    }
+
+    public static void updateArticleEntity(UpdateArticleRequest request, ArticleEntity entity) {
+        if (request.getTitle() != null) {
+            entity.setTitle(request.getTitle());
+        }
+        if (request.getSlug() != null) {
+            entity.setSlug(request.getSlug());
+        }
+        if (request.getDescription() != null) {
+            entity.setDescription(request.getDescription());
+        }
+        if (request.getContent() != null) {
+            entity.setContent(request.getContent());
+        }
+        if (request.getCoverImageId() != null) {
+            entity.setCoverImageId(request.getCoverImageId());
+        }
+        if (request.getCoverImageAlt() != null) {
+            entity.setCoverImageAlt(request.getCoverImageAlt());
+        }
     }
 }

@@ -16,6 +16,9 @@ dependencies {
     implementation(libs.spring.cloud.starter.consul.discovery)
     implementation(libs.spring.cloud.starter.config)
 
+    // Spring-retry
+    implementation(libs.spring.retry)
+
     // Database & Utilities
     implementation(libs.postgresql)
     implementation(libs.liquibase.core)

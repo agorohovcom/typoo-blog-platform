@@ -4,7 +4,6 @@ import jakarta.validation.constraints.Size;
 import lombok.Builder;
 import lombok.Value;
 
-import java.util.Set;
 import java.util.UUID;
 
 @Value
@@ -23,17 +22,6 @@ public class UpdateArticleRequest {
 
     UUID coverImageId;
     String coverImageAlt;
-
-    Integer categoryId;
-    Set<Integer> tagIds;
-
-    Boolean allowComments;
-    Boolean featured;
-    Boolean isPinned;
-
-    String metaTitle;
-    String metaDescription;
-    String metaKeywords;
 
     String revisionComment;
 }
